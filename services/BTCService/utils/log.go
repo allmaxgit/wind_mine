@@ -14,4 +14,6 @@ func SetupLogFile(logPath string) (err error) {
 	log.Println("----------------------------------")
 	log.Println("SESSION START")
 	log.Println("----------------------------------")
+
+	return
 }
