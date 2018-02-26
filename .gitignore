@@ -38,3 +38,4 @@ vendor/
 _vendor-*
 
 node_modules
+cmd
