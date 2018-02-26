@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"WindToken/utils"
-	"WindToken/services/BTCService/configs"
+	"WindToken/configs"
 	"WindToken/services/BTCService/service"
 )
 
