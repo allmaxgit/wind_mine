@@ -10,6 +10,7 @@ import (
 	"WindToken/types"
 	"encoding/gob"
 	"bytes"
+	"WindToken/constants/messageTypes"
 )
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 
 	var message bytes.Buffer
 	enc := gob.NewEncoder(&message)
-	enc.Encode(types.ServicePayload{Type: "Set address", Address: "address"})
+	enc.Encode(types.ServicePayload{Type: messageTypes.SET_ADDRESS, Address: "address"})
 
 	response := bufio.NewReader(conn)
 	_, err = conn.Write(append(message.Bytes(), '\n'))
