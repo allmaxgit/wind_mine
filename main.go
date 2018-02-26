@@ -1,9 +1,11 @@
 package main
 
-import "net"
-import "fmt"
-import "bufio"
-import "os"
+import (
+	"net"
+	"fmt"
+	"bufio"
+	"os"
+)
 
 func main() {
 	// TODO: Finish this
@@ -19,6 +21,6 @@ func main() {
 		fmt.Fprintf(conn, text + "\n")
 		// listen for reply
 		message, _ := bufio.NewReader(conn).ReadString('\n')
-		fmt.Print("Message from server: "+message)
+		fmt.Print("Message from server: " + message)
 	}
 }
