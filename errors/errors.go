@@ -3,7 +3,6 @@ package errors
 import (
 	"log"
 	"fmt"
-	"errors"
 )
 
 const (
