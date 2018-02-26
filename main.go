@@ -3,24 +3,40 @@ package main
 import (
 	"net"
 	"fmt"
-	"bufio"
 	"os"
+	"bufio"
+	"io"
+
+	"WindToken/types"
+	"encoding/gob"
+	"bytes"
 )
 
 func main() {
-	// TODO: Finish this
+	conn, err := net.Dial("tcp", "127.0.0.1:8082")
+	if err != nil {
+		fmt.Println("ERROR", err)
+		os.Exit(1)
+	}
 
-	// connect to this socket
-	conn, _ := net.Dial("tcp", "127.0.0.1:8082")
+	var message bytes.Buffer
+	enc := gob.NewEncoder(&message)
+	enc.Encode(types.ServicePayload{Type: "Set address", Address: "address"})
+
+	response := bufio.NewReader(conn)
+	_, err = conn.Write(append(message.Bytes(), '\n'))
+	if err != nil { panic(err) }
+
 	for {
-		// read in input from stdin
-		reader := bufio.NewReader(os.Stdin)
-		fmt.Print("Text to send: ")
-		text, _ := reader.ReadString('\n')
-		// send to socket
-		fmt.Fprintf(conn, text + "\n")
-		// listen for reply
-		message, _ := bufio.NewReader(conn).ReadString('\n')
-		fmt.Print("Message from server: " + message)
+		serverLine, err := response.ReadBytes(byte('\n'))
+		switch err {
+		case nil:
+			fmt.Print(string(serverLine))
+		case io.EOF:
+			os.Exit(0)
+		default:
+			fmt.Println("ERROR", err)
+			os.Exit(2)
+		}
 	}
 }
