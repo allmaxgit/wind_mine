@@ -14,7 +14,7 @@ func main() {
 	prod := flag.Bool("prod", false, "Run in production mode.")
 	flag.Parse()
 
-	defer recoverWatcher()
+	defer utils.RecoverWatcher()
 
 	conf, err := configs.ParseConfigs("./configs.toml", *prod)
 	if err != nil {
@@ -33,13 +33,5 @@ func main() {
 	fmt.Println("Launching BTCService...")
 	if err := service.StartTCPServer(conf.Server.TCPPort); err != nil {
 		log.Println("filed to start tcp server:", err.Error())
-	}
-}
-
-func recoverWatcher() {
-	if r := recover(); r != nil {
-		log.Println("----------------------------------")
-		log.Println("SESSION END WITH FATAL ERROR -", r)
-		log.Println("----------------------------------")
 	}
 }
