@@ -6,7 +6,6 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"golang.org/x/net/context"
-	"time"
 )
 
 const (
@@ -82,9 +81,9 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	if conf == nil {
 		return nil
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
-	defer cancel()
-	receipt, err := bind.WaitMined(ctx, conf.EthConnection, tx)
+	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
+	//defer cancel()
+	receipt, err := bind.WaitMined(context.Background(), conf.EthConnection, tx)
 	if err != nil {
 		fmt.Println("WaitMined error: " + err.Error())
 		return nil

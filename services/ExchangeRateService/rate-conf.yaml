@@ -17,5 +17,11 @@ contract_address:
 # Account private key for signing TXs in network, specified by network_id
 private_key:
 
-# How many seconds service should wait between updates of exchange rate
+# How many minutes service should wait between updates of exchange rate
 update_rate:
+
+# Fiat currency symbol for ETH exchange rate
+fiat_symbol:
+
+# Number of retries for exchange API requests
+retries:
