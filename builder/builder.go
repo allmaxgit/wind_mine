@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path"
 	"strings"
 )
 
@@ -37,7 +38,8 @@ func buildPkg(pkgPath string) {
 	if pkgPath == "" {
 		runCommand("go", "build", "-o", outPath)
 	} else {
-		runCommand("go", "build", "-o", outPath, pkgPath)
+		_, file := path.Split(pkgPath)
+		runCommand("go", "build", "-o", "./cmd/"+file, pkgPath)
 	}
 }
 
