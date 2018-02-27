@@ -2,6 +2,9 @@ package main
 
 import (
 	"fmt"
+	"math"
+	"math/big"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
@@ -9,7 +12,7 @@ import (
 )
 
 const (
-	//MAINNET Infura main netowork id
+	//MAINNET Infura main network id
 	MAINNET = iota + 1
 	//ROPSTEN Infura Ropsten network id
 	ROPSTEN
@@ -17,7 +20,7 @@ const (
 	RINKEBY
 	//KOVAN Infura Kovan network id
 	KOVAN
-	//INFURANET Infura Infuranet network id
+	//INFURANET Infuranet network id
 	INFURANET
 )
 
@@ -89,4 +92,80 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 		return nil
 	}
 	return receipt
+}
+
+//GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process
+func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
+	fiatUnitsInEther = round(fiatUnitsInEther, precision)
+
+	weiInFiatUnit := new(big.Int)
+	ether := new(big.Float)
+
+	fmt.Sscan("1000000000000000000.0", ether)
+	ether.Quo(ether, big.NewFloat(fiatUnitsInEther))
+	roundBigFloat(ether, precision)
+	ether.Int(weiInFiatUnit)
+
+	return weiInFiatUnit
+}
+
+//UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
+//and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed
+func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
+	if weiInFiatUnit == nil || c == nil {
+		return nil
+	}
+
+	session := GetContractSession(c)
+	if session == nil {
+		return nil
+	}
+
+	decimals, err := session.FiatDecimals()
+	if err != nil {
+		fmt.Println("Failed to get fiat decimals from the contract")
+		return nil
+	}
+
+	// calculating number of wei in minimal fiat currency fracture
+	fiatInWei := weiInFiatUnit.Div(weiInFiatUnit, big.NewInt(int64(math.Pow(10, float64(decimals.Int64())))))
+
+	tx, err := session.UpdateWeiInFiat(fiatInWei)
+	if err != nil {
+		fmt.Println("Failed to send TX UpdateWeiInFiat")
+		return nil
+	}
+
+	receipt := GetReceipt(tx, c)
+	if receipt == nil {
+		fmt.Println("Failed to get receipt for TX UpdateWeiInFiat with hash", tx.Hash().Hex())
+		return nil
+	}
+
+	if receipt.Status != 1 {
+		fmt.Println("TX UpdateWeiInFiat failed")
+		return nil
+	}
+	fmt.Println("Updated weiInFiat with value", fiatInWei.String())
+	return weiInFiatUnit
+}
+
+func round(x float64, prec int) float64 {
+	var rounder float64
+	pow := math.Pow(10, float64(prec))
+	intermed := x * pow
+	_, frac := math.Modf(intermed)
+	if frac >= 0.5 {
+		rounder = math.Ceil(intermed)
+	} else {
+		rounder = math.Floor(intermed)
+	}
+
+	return rounder / pow
+}
+
+func roundBigFloat(x *big.Float, prec int) *big.Float {
+	fl, _ := x.Float64()
+	x.SetFloat64(round(fl, 2))
+	return x
 }

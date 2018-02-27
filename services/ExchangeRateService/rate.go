@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+//ExchangeRateProvider describes service, which provides API for getting cryptocurrency to fiat currency exchange rate
 type ExchangeRateProvider struct {
 	Name string
 	URL  string
@@ -19,10 +20,11 @@ var (
 	RateProviders = [3]*ExchangeRateProvider{
 		{"CryptoCompare", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms="},
 		{"Cryptonator", "https://api.cryptonator.com/api/ticker/eth-"},
-		{"Coinmarketcap", "https://api.coinmarketcap.com/v1/ticker/ethereum/?convert="},
+		{"CoinMarketCap", "https://api.coinmarketcap.com/v1/ticker/ethereum/?convert="},
 	}
 )
 
+//GetAverageRate performs requests to CryptoCompare, Cryptonator and CoinMarketCap for ETH/symbol exchange rate and returns average rate
 func GetAverageRate(symbol string, c *Config) float64 {
 	rates := make(chan float64, 3)
 
@@ -38,21 +40,28 @@ func GetAverageRate(symbol string, c *Config) float64 {
 		rates <- GetCoinMarketCapRate(symbol, c)
 	}()
 
-	count := 0.0
+	count := 0
+	validCount := 0.0
 	sum := 0.0
 	select {
 	case val := <-rates:
 		count++
-		sum += val
+		if val != -math.MaxFloat64 && val > 0 {
+			sum += val
+			validCount++
+		}
 		if count == 3 {
 			break
 		}
 	}
 
-	return sum / count
+	if validCount == 0 {
+		return -math.MaxFloat64
+	}
+	return sum / validCount
 }
 
-//GetCryptoCompareRate performs GET request to CryptoCompare for symbol and returns ETH/symbol exchange rate
+//GetCryptoCompareRate performs GET request to CryptoCompare and returns ETH/symbol exchange rate
 func GetCryptoCompareRate(symbol string, c *Config) float64 {
 	rate := -math.MaxFloat64
 	if c == nil {
@@ -76,6 +85,7 @@ func GetCryptoCompareRate(symbol string, c *Config) float64 {
 			}
 			if tErr != nil {
 				fmt.Println("JSON response decoding error: " + tErr.Error())
+				continue
 			}
 			//if we have found fiat symbol in response, than next token will be exchange rate
 			if fmt.Sprintf("%v", t) == symbol {
@@ -94,6 +104,7 @@ func GetCryptoCompareRate(symbol string, c *Config) float64 {
 	return rate
 }
 
+//CryptonatorTicker is struct, which describes Cryptonator exchange ticker with information about currency price and 24h trading volume
 type CryptonatorTicker struct {
 	Base   string `json:"base"`
 	Target string `json:"target"`
@@ -102,6 +113,7 @@ type CryptonatorTicker struct {
 	Change string `json:"change"`
 }
 
+//CryptonatorResponse is a struct, which describes response from Cryptonator with exchange rate and
 type CryptonatorResponse struct {
 	Ticker    CryptonatorTicker `json:"ticker"`
 	Timestamp int               `json:"timestamp"`
@@ -109,6 +121,7 @@ type CryptonatorResponse struct {
 	Error     string            `json:"error"`
 }
 
+//GetCryptonatorRate performs GET request to Cryptonator and returns ETH/symbol exchange rate
 func GetCryptonatorRate(symbol string, c *Config) float64 {
 	rate := -math.MaxFloat64
 	if c == nil {
@@ -153,6 +166,7 @@ func GetCryptonatorRate(symbol string, c *Config) float64 {
 	return rate
 }
 
+//GetCoinMarketCapRate performs GET request to CoinMarketCap and returns ETH/symbol exchange rate
 func GetCoinMarketCapRate(symbol string, c *Config) float64 {
 	rate := -math.MaxFloat64
 	if c == nil {
@@ -177,6 +191,7 @@ func GetCoinMarketCapRate(symbol string, c *Config) float64 {
 			}
 			if tErr != nil {
 				fmt.Println("JSON response decoding error: " + tErr.Error())
+				continue
 			}
 			//if we have found fiat symbol in response, than next token will be exchange rate
 			if fmt.Sprintf("%v", t) == responseField {

@@ -1,29 +1,38 @@
 package main
 
 import (
-	//"fmt"
+	"fmt"
+	"time"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
 	//"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/spf13/viper"
-	"time"
+	"github.com/fsnotify/fsnotify"
 )
 
 type Config struct {
+	Retries       int
+	NetworkId     int
+	InfuraToken   string
+	FiatSymbol    string
 	EthConnection *ethclient.Client
 	Transactor    *bind.TransactOpts
-	InfuraToken   string
-	NetworkId     int
 	Contract      common.Address
 	UpdateRate    time.Duration
-	FiatSymbol    string
-	Retries       int
 }
 
 var conf *Config
 
 func GetConfig() *Config {
+	viper.OnConfigChange(func(in fsnotify.Event) {
+		if in.Op == fsnotify.Write {
+			fmt.Println("Config file changed, reloading configuration...")
+			conf = loadConfig()
+		}
+	})
+
 	if conf == nil {
 		conf = loadConfig()
 	}
@@ -46,6 +55,7 @@ func loadConfig() *Config {
 
 	//contractAddress := viper.GetString("contract_address")
 	//if !common.IsHexAddress(contractAddress) {
+	//	fmt.Println("Valid contract address is required")
 	//	return nil
 	//}
 	//c.Contract = common.HexToAddress(contractAddress)
@@ -59,12 +69,8 @@ func loadConfig() *Config {
 	//}
 	//c.Transactor = bind.NewKeyedTransactor(key)
 
-	viper.SetDefault("fiat_symbol", "USD")
 	c.FiatSymbol = viper.GetString("fiat_symbol")
-
 	c.Retries = viper.GetInt("retries")
-
-	conf = c
 
 	return c
 }
