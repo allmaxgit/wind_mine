@@ -1,16 +1,18 @@
 package service
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
-	"bufio"
 )
 
 // StartTCPServer
 func StartTCPServer(port uint) (err error) {
-	ln, err := net.Listen("tcp", ":" + string(port))
-	if err != nil { return }
+	ln, err := net.Listen("tcp", ":"+string(port))
+	if err != nil {
+		return
+	}
 	defer ln.Close()
 
 	for {

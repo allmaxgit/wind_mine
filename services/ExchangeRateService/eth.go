@@ -60,7 +60,7 @@ func GetContractSession(conf *Config) *UsingFiatPriceSession {
 	}
 	contract, err := NewUsingFiatPrice(conf.Contract, conf.EthConnection)
 	if err != nil {
-		fmt.Println("Failed to create session: " + err.Error())
+		conf.Logger.Println("Failed to create session: " + err.Error())
 		return nil
 	}
 
@@ -73,7 +73,7 @@ func GetContractSession(conf *Config) *UsingFiatPriceSession {
 		TransactOpts: bind.TransactOpts{
 			From:     conf.Transactor.From,
 			Signer:   conf.Transactor.Signer,
-			GasLimit: 7900000,
+			GasLimit: conf.GasLimit,
 			Value:    conf.Transactor.Value,
 		},
 	}
@@ -88,7 +88,7 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	//defer cancel()
 	receipt, err := bind.WaitMined(context.Background(), conf.EthConnection, tx)
 	if err != nil {
-		fmt.Println("WaitMined error: " + err.Error())
+		conf.Logger.Println("WaitMined error: " + err.Error())
 		return nil
 	}
 	return receipt
@@ -123,7 +123,7 @@ func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 
 	decimals, err := session.FiatDecimals()
 	if err != nil {
-		fmt.Println("Failed to get fiat decimals from the contract")
+		conf.Logger.Println("Failed to get fiat decimals from the contract:", err.Error())
 		return nil
 	}
 
@@ -132,21 +132,21 @@ func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 
 	tx, err := session.UpdateWeiInFiat(fiatInWei)
 	if err != nil {
-		fmt.Println("Failed to send TX UpdateWeiInFiat")
+		conf.Logger.Println("Failed to send TX UpdateWeiInFiat:", err.Error())
 		return nil
 	}
 
 	receipt := GetReceipt(tx, c)
 	if receipt == nil {
-		fmt.Println("Failed to get receipt for TX UpdateWeiInFiat with hash", tx.Hash().Hex())
+		conf.Logger.Println("Failed to get receipt for TX UpdateWeiInFiat with hash", tx.Hash().Hex())
 		return nil
 	}
 
 	if receipt.Status != 1 {
-		fmt.Println("TX UpdateWeiInFiat failed")
+		conf.Logger.Println("TX UpdateWeiInFiat failed")
 		return nil
 	}
-	fmt.Println("Updated weiInFiat with value", fiatInWei.String())
+	conf.Logger.Println("Updated weiInFiat with value", fiatInWei.String())
 	return weiInFiatUnit
 }
 

@@ -15,7 +15,7 @@ type Common struct {
 }
 
 type Server struct {
-	TCPPort   uint `toml:"tcpPort"`
+	TCPPort uint `toml:"tcpPort"`
 }
 
 var configs Configs

@@ -25,3 +25,6 @@ fiat_symbol:
 
 # Number of retries for exchange API requests
 retries:
+
+# Block gas limit in the network, specified by network_id
+gas_limit:
