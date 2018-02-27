@@ -1,11 +1,12 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"strings"
-	"os/exec"
 	"log"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
 )
 
 var outPath = "./cmd/WindToken"
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	path := strings.Split(pwd, "/")
-	rootDir := path[len(path) - 1]
+	rootDir := path[len(path)-1]
 
 	if rootDir != "WindToken" {
 		log.Fatalln("please run it from 'WindToken' dir")
@@ -28,6 +29,7 @@ func main() {
 	// Run commands
 	buildPkg("")
 	buildPkg("./services/BTCService")
+	buildPkg("./services/ExchangeRateService")
 
 	fmt.Println("success")
 }
@@ -36,7 +38,8 @@ func buildPkg(pkgPath string) {
 	if pkgPath == "" {
 		runCommand("go", "build", "-o", outPath)
 	} else {
-		runCommand("go", "build", "-o", outPath, pkgPath)
+		_, file := path.Split(pkgPath)
+		runCommand("go", "build", "-o", "./cmd/"+file, pkgPath)
 	}
 }
 

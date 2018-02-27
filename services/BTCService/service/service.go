@@ -1,19 +1,19 @@
 package service
 
 import (
-	"fmt"
-	"net"
-	"os"
 	"bufio"
-	"io"
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"io"
+	"net"
+	"os"
 
 	uErr "WindToken/errors"
 
-	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/services/BTCService/btc"
+	"WindToken/types"
 )
 
 // StartTCPServer starts TCP listening on certain port
@@ -43,7 +43,9 @@ func handleConnection(conn net.Conn) {
 	for {
 		line, err := r.ReadBytes(byte('\n'))
 		if err != nil {
-			if err == io.EOF { break }
+			if err == io.EOF {
+				break
+			}
 			panic(err) // TODO: Improve
 		}
 

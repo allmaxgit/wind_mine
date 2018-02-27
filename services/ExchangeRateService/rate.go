@@ -1,0 +1,221 @@
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"math"
+	"net/http"
+	"strconv"
+	"strings"
+)
+
+//ExchangeRateProvider describes service, which provides API for getting cryptocurrency to fiat currency exchange rate
+type ExchangeRateProvider struct {
+	Name string
+	URL  string
+}
+
+//CryptonatorTicker is struct, which describes Cryptonator exchange ticker with information about currency price and 24h trading volume
+type CryptonatorTicker struct {
+	Base   string `json:"base"`
+	Target string `json:"target"`
+	Price  string `json:"price"`
+	Volume string `json:"volume"`
+	Change string `json:"change"`
+}
+
+//CryptonatorResponse is a struct, which describes response from Cryptonator with exchange rate and
+type CryptonatorResponse struct {
+	Ticker    CryptonatorTicker `json:"ticker"`
+	Timestamp int               `json:"timestamp"`
+	Success   bool              `json:"success"`
+	Error     string            `json:"error"`
+}
+
+var (
+	RateProviders = [3]*ExchangeRateProvider{
+		{"CryptoCompare", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms="},
+		{"Cryptonator", "https://api.cryptonator.com/api/ticker/eth-"},
+		{"CoinMarketCap", "https://api.coinmarketcap.com/v1/ticker/ethereum/?convert="},
+	}
+)
+
+//GetAverageRate performs requests to CryptoCompare, Cryptonator and CoinMarketCap for ETH/symbol exchange rate and returns average rate
+func GetAverageRate(symbol string, c *Config) float64 {
+	rates := make(chan float64, 3)
+
+	go func() {
+		rates <- GetCryptoCompareRate(symbol, c)
+	}()
+
+	go func() {
+		rates <- GetCryptonatorRate(symbol, c)
+	}()
+
+	go func() {
+		rates <- GetCoinMarketCapRate(symbol, c)
+	}()
+
+	count := 0
+	validCount := 0.0
+	sum := 0.0
+	select {
+	case val := <-rates:
+		count++
+		if val != -math.MaxFloat64 && val > 0 {
+			sum += val
+			validCount++
+		}
+		if count == 3 {
+			break
+		}
+	}
+
+	if validCount == 0 {
+		return -math.MaxFloat64
+	}
+	return sum / validCount
+}
+
+//GetCryptoCompareRate performs GET request to CryptoCompare and returns ETH/symbol exchange rate
+func GetCryptoCompareRate(symbol string, conf *Config) float64 {
+	rate := -math.MaxFloat64
+	if conf == nil {
+		return rate
+	}
+	fullUrl := RateProviders[0].URL + symbol
+
+	conf.Logger.Println("Querying CryptoCompare for exchange rate...")
+
+	// Perform c.Retries of request retries
+	for retries := 0; retries < conf.Retries; retries++ {
+		resp, err := http.Get(fullUrl)
+		if err != nil {
+			conf.Logger.Println("CryptoCompare request error: " + err.Error())
+			continue
+		}
+		dec := json.NewDecoder(resp.Body)
+		// Manually read JSON response, looking for key equal to fiat symbol
+		for {
+			t, tErr := dec.Token()
+			if tErr == io.EOF {
+				break
+			}
+			if tErr != nil {
+				fmt.Println("JSON response decoding error: " + tErr.Error())
+				continue
+			}
+			//if we have found fiat symbol in response, than next token will be exchange rate
+			if fmt.Sprintf("%v", t) == symbol {
+				val, _ := dec.Token()
+				rate = val.(float64)
+				break
+			}
+		}
+		resp.Body.Close()
+		//stop retrying requests if we have found some non-default value
+		if rate != -math.MaxFloat64 {
+			break
+		}
+	}
+
+	return rate
+}
+
+//GetCryptonatorRate performs GET request to Cryptonator and returns ETH/symbol exchange rate
+func GetCryptonatorRate(symbol string, conf *Config) float64 {
+	rate := -math.MaxFloat64
+	if conf == nil {
+		return rate
+	}
+	fullUrl := RateProviders[1].URL + strings.ToLower(symbol)
+
+	conf.Logger.Println("Querying Cryptonator for exchange rate...")
+
+	// Perform conf.Retries of request retries
+	for retries := 0; retries < conf.Retries; retries++ {
+		resp, err := http.Get(fullUrl)
+		if err != nil {
+			conf.Logger.Println("CryptoCompare request error: " + err.Error())
+			continue
+		}
+		response := &CryptonatorResponse{}
+		err = json.NewDecoder(resp.Body).Decode(response)
+		resp.Body.Close()
+		if err != nil {
+			conf.Logger.Println("Failed to decode cryptonator response")
+			continue
+		}
+
+		if response.Error != "" {
+			conf.Logger.Println("Cryptonator error: ", response.Error)
+			continue
+		}
+
+		r, err := strconv.ParseFloat(response.Ticker.Price, 64)
+		if err != nil {
+			conf.Logger.Println("Failed to parse float in response")
+			continue
+		}
+
+		rate = r
+
+		//stop retrying requests if we have found some non-default value
+		if rate != -math.MaxFloat64 {
+			break
+		}
+	}
+
+	return rate
+}
+
+//GetCoinMarketCapRate performs GET request to CoinMarketCap and returns ETH/symbol exchange rate
+func GetCoinMarketCapRate(symbol string, conf *Config) float64 {
+	rate := -math.MaxFloat64
+	if conf == nil {
+		return rate
+	}
+	fullUrl := RateProviders[2].URL + symbol
+	responseField := "price_" + strings.ToLower(symbol)
+
+	conf.Logger.Println("Querying CoinMarketCap for exchange rate...")
+
+	// Perform c.Retries of request retries
+	for retries := 0; retries < conf.Retries; retries++ {
+		resp, err := http.Get(fullUrl)
+		if err != nil {
+			conf.Logger.Println("CryptoCompare request error: " + err.Error())
+			continue
+		}
+		dec := json.NewDecoder(resp.Body)
+		// Manually read JSON response, looking for key equal to fiat symbol
+		for {
+			t, tErr := dec.Token()
+			if tErr == io.EOF {
+				break
+			}
+			if tErr != nil {
+				fmt.Println("JSON response decoding error: " + tErr.Error())
+				continue
+			}
+			//if we have found fiat symbol in response, than next token will be exchange rate
+			if fmt.Sprintf("%v", t) == responseField {
+				val, _ := dec.Token()
+				strRate := fmt.Sprintf("%v", val)
+				r, err := strconv.ParseFloat(strRate, 64)
+				if err == nil {
+					rate = r
+				}
+				break
+			}
+		}
+		resp.Body.Close()
+		//stop retrying requests if we have found some non-default value
+		if rate != -math.MaxFloat64 {
+			break
+		}
+	}
+
+	return rate
+}

@@ -2,13 +2,13 @@ package main
 
 import (
 	"flag"
-	"log"
 	"fmt"
+	"log"
 
-	"WindToken/utils"
 	"WindToken/configs"
-	"WindToken/services/BTCService/service"
 	"WindToken/services/BTCService/btc"
+	"WindToken/services/BTCService/service"
+	"WindToken/utils"
 )
 
 func main() {

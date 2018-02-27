@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net"
-	"fmt"
-	"os"
 	"bufio"
+	"fmt"
 	"io"
+	"net"
+	"os"
 
-	"WindToken/types"
-	"encoding/gob"
-	"bytes"
 	"WindToken/constants/messageTypes"
+	"WindToken/types"
+	"bytes"
+	"encoding/gob"
 )
 
 func main() {
@@ -26,7 +26,9 @@ func main() {
 
 	response := bufio.NewReader(conn)
 	_, err = conn.Write(append(message.Bytes(), '\n'))
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 
 	for {
 		serverLine, err := response.ReadBytes(byte('\n'))
