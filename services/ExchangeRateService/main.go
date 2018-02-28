@@ -4,6 +4,7 @@ package main
 
 import (
 	"log"
+	"math"
 	"math/big"
 	"os"
 	"time"
@@ -27,10 +28,16 @@ func main() {
 	for {
 		conf.Logger.Println("Updating exchange rate...")
 		rate := GetAverageRate(conf.FiatSymbol, conf)
+		if rate == -math.MaxFloat64 {
+			conf.Logger.Println("Failed to get exchange rate from 3 sources, skipping")
+			time.Sleep(conf.UpdateRate * time.Minute)
+			continue
+		}
+
 		conf.Logger.Println("Average ETH/"+conf.FiatSymbol+" exchange rate -", rate)
+		last := GetWeiInFiatUnit(rate, 2)
 
 		for retries := 0; retries < conf.Retries; retries++ {
-			last := GetWeiInFiatUnit(rate, 2)
 			if lastWeiInFiatUnit != nil && last.Cmp(lastWeiInFiatUnit) == 0 {
 				conf.Logger.Println("Exchange rate has not changed, skipping")
 				break
