@@ -108,6 +108,11 @@ class App extends Component {
                     divider={divider}
                     decimals={token.decimals}
                 />
+                <Statistics
+                    instanceCrowdsale={instanceCrowdsale}
+                    instanceToken={instanceToken}
+                    divider={divider}
+                />
             </Col>
           </Row>
         </Container>
