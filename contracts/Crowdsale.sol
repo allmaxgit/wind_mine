@@ -21,6 +21,12 @@ contract Crowdsale is UsingFiatPrice {
     }
 
     /**
+     * @title investorsList
+     * @dev List of investors to get investors statistics
+     */
+    address[] public investorsList;
+
+    /**
      * @title privatePriceInFiatFracture
      * @dev Token price in minimal fiat currency fracture for Private Sale stage
      */
@@ -258,6 +264,11 @@ contract Crowdsale is UsingFiatPrice {
         require(tokensSold.add(_amount) < currentHardCap);
 
         ManualTokenSend(_receiver, _amount);
+
+        if (token.balanceOf(_receiver) == 0) {
+            investorsList.push(_receiver);
+        }
+
         tokensSold = tokensSold.add(_amount);
         token.transfer(_receiver, _amount);
     }
@@ -316,6 +327,11 @@ contract Crowdsale is UsingFiatPrice {
 
         tokensSold = tokensSold.add(tokens);
         weiRaised = weiRaised.add(realReceivedWei);
+
+        if (token.balanceOf(_sender) == 0) {
+            investorsList.push(_sender);
+        }
+
         if (change > 0) {
             _sender.transfer(change);
         }
