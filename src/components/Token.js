@@ -66,7 +66,6 @@ Token.propTypes = {
     decimals: PropTypes.number
   }),
   instanceToken: PropTypes.shape({
-//    paused: PropTypes.func.isRequired,
     owner: PropTypes.func.isRequired,
     totalSupply: PropTypes.func.isRequired,
     balanceOf: PropTypes.func.isRequired

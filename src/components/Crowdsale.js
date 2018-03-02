@@ -285,8 +285,10 @@ class Crowdsale extends Component {
                     <Row>token: {token}</Row>
                     <Row>crowdsaleState: {crowdsaleState.toString()}</Row>
                     <Row>wallet: {wallet}</Row>
-                    <Row>weiRaised: {weiRaised.toString()}</Row>
+                    <Row>generalHardCap: {(generalHardCap / this.props.divider).toString()}</Row>
+                    <Row>currentHardCap: {(currentHardCap / this.props.divider).toString()}</Row>
                     <Row>tokensSold: {tokensSold.toString()}</Row>
+                    <Row>weiRaised: {weiRaised.toString()}</Row>
                     <hr className="my-2" />
                     <Row>
                         <Col>
@@ -312,21 +314,19 @@ class Crowdsale extends Component {
                         </Col>
                     </Row>
                     <hr className="my-2" />
-                    <Row className="funcRow">
-                        <Col md={{ size: 3 }}>
-                            <Button className="funcButton" color="info" onClick={() => this.withdraw()}>withdraw</Button>
-                        </Col>
+                    <Row className="funcRow" style={{justifyContent: 'center'}}>
+                        <Button className="funcButton" color="info" onClick={() => this.withdraw()}>withdraw</Button>
                     </Row>
                     <hr className="my-2" />
                     <Row><h5>Public functions</h5></Row>
                     <SmartContractFunction
-                        label="Set new Private Participant"
+                        label="Add new Private Participant"
                         variable={newPrivateParticipant}
                         valueChange="newPrivateParticipant"
                         funcChange={this.changeValue}
                         buttonTitle="addPrivateParticipant"
                         funcButton={this.addPrivateParticipant}
-                        placeholder="address"
+                        placeholder="Address new Private Participant"
                     />
                     <SmartContractFunction
                         label="Set new wallet"

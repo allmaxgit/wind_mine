@@ -121,11 +121,4 @@ class App extends Component {
     );
   }
 }
-/*
-          <Statistics
-              instanceCrowdsale={instanceCrowdsale}
-              divider={divider}
-          />
-
- */
 export default App;

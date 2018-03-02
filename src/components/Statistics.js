@@ -29,7 +29,6 @@ class Statistics extends Component {
         currentBuyer = await instanceToken.balanceOf.call(address);
         buyers.push({
           address,
-//          investments: currentBuyer[0].toNumber()  / 10 ** 18,
           amount: currentBuyer[1].toNumber() / this.props.divider
         });
       }
@@ -57,14 +56,8 @@ class Statistics extends Component {
     );
   }
 }
-/*
-                <TableHeaderColumn dataField="investments">Total investments, ETH</TableHeaderColumn>
-
- */
 Statistics.propTypes = {
     instanceToken: PropTypes.shape({
-//        owner: PropTypes.func.isRequired,
-//        totalSupply: PropTypes.func.isRequired,
         balanceOf: PropTypes.func.isRequired
     }).isRequired,
   instanceCrowdsale: PropTypes.shape({
