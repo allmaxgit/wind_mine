@@ -19,7 +19,6 @@ class Statistics extends Component {
     const buyers = [];
     let currentBuyer;
     let address;
-    console.log(instanceCrowdsale);
     const numberOfBuyers = (await instanceCrowdsale.getInvestorsListLength.call()).toNumber();
     if (numberOfBuyers > 0) {
       for (let index = 0; index < numberOfBuyers; index += 1) {
