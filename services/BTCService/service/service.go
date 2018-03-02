@@ -1,29 +1,74 @@
 package service
 
 import (
-	"fmt"
-	"log"
-	"net"
 	"bufio"
+	"bytes"
+	"encoding/gob"
+	"fmt"
+	"io"
+	"net"
+	"os"
+
+	uErr "WindToken/errors"
+
+	"WindToken/constants/messageTypes"
+	"WindToken/services/BTCService/btc"
+	"WindToken/types"
 )
 
-// StartTCPServer
+// StartTCPServer starts TCP listening on certain port
 func StartTCPServer(port uint) (err error) {
-	ln, err := net.Listen("tcp", ":" + string(port))
-	if err != nil { return }
-	defer ln.Close()
+	l, err := net.Listen("tcp", "127.0.0.1:8082")
+	if err != nil {
+		fmt.Println("ERROR", err)
+		os.Exit(1)
+	}
+	defer l.Close()
 
 	for {
-		conn, err := ln.Accept()
+		conn, err := l.Accept()
 		if err != nil {
-			panic(fmt.Sprintf("filed to accept message: %s", err.Error()))
+			fmt.Println("ERROR", err)
+			continue
 		}
 
-		message, err := bufio.NewReader(conn).ReadString('\n')
+		go handleConnection(conn)
+	}
+}
+
+func handleConnection(conn net.Conn) {
+	defer conn.Close()
+
+	r := bufio.NewReader(conn)
+	for {
+		line, err := r.ReadBytes(byte('\n'))
 		if err != nil {
-			panic(fmt.Sprintf("filed to read message: %s", err.Error()))
+			if err == io.EOF {
+				break
+			}
+			panic(err) // TODO: Improve
 		}
 
-		log.Println("Message Received: ", string(message))
+		r := bytes.NewReader(line)
+		var message types.ServicePayload
+		dec := gob.NewDecoder(r)
+		err = dec.Decode(&message)
+		if err != nil {
+			continue
+		}
+
+		switch message.Type {
+		case messageTypes.SET_ADDRESS:
+			err = btc.WatchAddress(message.Address)
+		default:
+			continue
+		}
+
+		if err != nil {
+			uErr.LogError(err, "filed to handle message with type:", message.Type)
+			continue
+		}
+
+		fmt.Println(message, line)
 	}
 }

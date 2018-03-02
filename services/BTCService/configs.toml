@@ -2,4 +2,4 @@
     logOutPath = "./out/out.log"
 
 [server]
-    tcpPort = ":8082"
+    tcpPort = 8082
