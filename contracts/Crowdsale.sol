@@ -210,6 +210,10 @@ contract Crowdsale is UsingFiatPrice {
         icoPriceInFiatFracture = 10 ** fiatDecimals;
     }
 
+    function getInvestorsListLength() public view returns (uint256) {
+        return investorsList.length;
+    }
+
     /**
      * @dev Users can send ETH directly to the crowdsale to buy tokens
      */
