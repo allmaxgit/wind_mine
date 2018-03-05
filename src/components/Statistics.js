@@ -28,7 +28,7 @@ class Statistics extends Component {
         currentBuyer = await instanceToken.balanceOf.call(address);
         buyers.push({
           address,
-          amount: currentBuyer[1].toNumber() / this.props.divider
+          amount: currentBuyer.toNumber() / this.props.divider
         });
       }
     }
