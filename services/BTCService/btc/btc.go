@@ -1,12 +1,15 @@
 package btc
 
 import (
+	"errors"
 	"log"
 
 	"github.com/btcsuite/btcd/rpcclient"
-	"errors"
-	"github.com/btcsuite/btcd/wire"
-	"github.com/btcsuite/btcutil"
+	"github.com/btcsuite/btcd/chaincfg/chainhash"
+)
+
+const (
+	ACCOUNT = "mainAccount"
 )
 
 var (
@@ -15,34 +18,46 @@ var (
 
 // StartRPCConnection starts connection to node
 func StartRPCConnection() (err error) {
-	ntfnHandlers := rpcclient.NotificationHandlers{
-		OnFilteredBlockConnected: func(height int32, header *wire.BlockHeader, txns []*btcutil.Tx) {
-			log.Printf("Block connected: %v (%d) %v",
-				header.BlockHash(), height, header.Timestamp)
-		},
-		OnFilteredBlockDisconnected: func(height int32, header *wire.BlockHeader) {
-			log.Printf("Block disconnected: %v (%d) %v",
-				header.BlockHash(), height, header.Timestamp)
-		},
-	}
-
 	connCfg := &rpcclient.ConnConfig{
 		Host:         "162.213.252.104:8332",
-		Endpoint:     "ws",
 		User:         "bitcoin",
 		Pass:         "local321",
+		HTTPPostMode: true,
+		DisableTLS:   true,
 	}
-	client, err = rpcclient.New(connCfg, &ntfnHandlers)
-	if err != nil { panic(err) }
 
-	if err := client.NotifyBlocks(); err != nil {
-		panic(err)
-	}
-	log.Println("NotifyBlocks: Registration Complete")
-
-	blockCount, err := client.GetBlockCount()
+	client, err = rpcclient.New(connCfg, nil)
 	if err != nil { return }
-	log.Printf("Block count: %d", blockCount)
+
+	bCount, err := client.GetBlockCount()
+	if err != nil { return }
+	log.Println(bCount)
+
+	lastHash, err := client.GetBlockHash(bCount)
+	if err != nil { return }
+	log.Println("last block", lastHash)
+
+	lastBlock, err := client.GetBlockVerbose(lastHash)
+	if err != nil { return }
+
+	//txs, err := lastBlock.TxHashes()
+	//if err != nil { return }
+
+	for _, txStr := range lastBlock.Tx {
+		txHash, _ := chainhash.NewHashFromStr(txStr)
+
+		tx, err := client.GetRawTransactionVerbose(txHash)
+		if err != nil {
+			return err // TODO: Restart cycle
+		}
+
+		for _, vout := range tx.Vout {
+			for _, addr := range vout.ScriptPubKey.Addresses {
+				log.Println("Address:", addr)
+			}
+		}
+	}
+
 
 	return
 }

@@ -12,38 +12,38 @@ import (
 )
 
 func main() {
-	// parse flags
+	// Parse flags
 	prod := flag.Bool("prod", false, "Run in production mode.")
 	flag.Parse()
 
 	defer utils.RecoverWatcher()
 
-	// parse configs
+	// Parse configs
 	conf, err := configs.ParseConfigs("./configs.toml", *prod)
 	if err != nil {
-		fmt.Println("failed to parse configs:", err.Error())
+		fmt.Println("ERROR - failed to parse configs:", err.Error())
 		return
 	}
 
-	// setup prod features
+	// Setup prod features
 	if *prod {
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
-			fmt.Println("failed to setup log file:", err.Error())
+			fmt.Println("ERROR - failed to setup log file:", err.Error())
 			return
 		}
 	}
 
-	// connect to BTC Node
+	// Connect to BTC Node
 	fmt.Println("Connecting to node...")
 	err = btc.StartRPCConnection()
 	if err != nil {
-		fmt.Println("failed connect to node", err.Error())
+		fmt.Println("ERROR - failed connect to node", err.Error())
 		return
 	}
 
-	// start TCP Server
-	fmt.Println("Launching BTCService...")
+	// Start TCP Server
+	fmt.Println("Launching TCP...")
 	if err := service.StartTCPServer(conf.Server.TCPPort); err != nil {
 		log.Println("filed to start tcp server:", err.Error())
 	}
