@@ -281,36 +281,36 @@ class Crowdsale extends Component {
                 <Col>
                     <Row><h3>Crowdsale</h3></Row>
                     <Row>Address: {instanceCrowdsale.address}</Row>
-                    <Row>owner: {owner}</Row>
-                    <Row>token: {token}</Row>
-                    <Row>crowdsaleState: {crowdsaleState.toString()}</Row>
-                    <Row>wallet: {wallet}</Row>
-                    <Row>generalHardCap: {(generalHardCap / this.props.divider).toString()}</Row>
-                    <Row>currentHardCap: {(currentHardCap / this.props.divider).toString()}</Row>
-                    <Row>tokensSold: {tokensSold.toString()}</Row>
-                    <Row>weiRaised: {weiRaised.toString()}</Row>
+                    <Row>Owner: {owner}</Row>
+                    <Row>Token: {token}</Row>
+                    <Row>Crowdsale State: {crowdsaleState.toString()}</Row>
+                    <Row>Wallet: {wallet}</Row>
+                    <Row>General Hard Cap: {(generalHardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
+                    <Row>Current Hard Cap: {(currentHardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
+                    <Row>Tokens Sold: {(tokensSold / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
+                    <Row>Wei Raised: {weiRaised.toString()}</Row>
                     <hr className="my-2" />
                     <Row>
                         <Col>
-                            <Row><h5>privateSale</h5></Row>
+                            <Row><h5>Private Sale</h5></Row>
                             <Row>Start: {moment.unix(privateSale.startDate).format(dateFormat)}</Row>
                             <Row>Duration: {Math.floor(privateSale.duration / 86400).toString()} days</Row>
-                            <Row>priceInFiatFracture: {privateSale.priceInFiatFracture.toString()}</Row>
-                            <Row>hardCap: {(privateSale.hardCap / this.props.divider).toString()}</Row>
+                            <Row>Price In Fiat Fracture: {privateSale.priceInFiatFracture.toString()}</Row>
+                            <Row>Hard Cap: {(privateSale.hardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
                         </Col>
                         <Col>
-                            <Row><h5>preIco</h5></Row>
+                            <Row><h5>Pre-ICO</h5></Row>
                             <Row>Start: {moment.unix(preIco.startDate).format(dateFormat)}</Row>
                             <Row>Duration: {Math.floor(preIco.duration / 86400).toString()} days</Row>
-                            <Row>priceInFiatFracture: {preIco.priceInFiatFracture.toString()}</Row>
-                            <Row>hardCap: {(preIco.hardCap / this.props.divider).toString()}</Row>
+                            <Row>Price In Fiat Fracture: {preIco.priceInFiatFracture.toString()}</Row>
+                            <Row>Hard Cap: {(preIco.hardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
                         </Col>
                         <Col>
-                            <Row><h5>preIco</h5></Row>
+                            <Row><h5>ICO</h5></Row>
                             <Row>Start: {moment.unix(ico.startDate).format(dateFormat)}</Row>
                             <Row>Duration: {Math.floor(ico.duration / 86400).toString()} days</Row>
-                            <Row>priceInFiatFracture: {ico.priceInFiatFracture.toString()}</Row>
-                            <Row>hardCap: {(ico.hardCap / this.props.divider).toString()}</Row>
+                            <Row>Price In Fiat Fracture: {ico.priceInFiatFracture.toString()}</Row>
+                            <Row>Hard Cap: {(ico.hardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
                         </Col>
                     </Row>
                     <hr className="my-2" />

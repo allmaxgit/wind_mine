@@ -42,7 +42,7 @@ class Token extends Component {
           <Row>Name: {name}</Row>
           <Row>Symbol: {symbol}</Row>
           <Row>Decimals: {decimals}</Row>
-          <Row>TotalSupply: {(totalSupply / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: decimals })} WMD</Row>
+          <Row>Total Supply: {(totalSupply / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: decimals })} WMD</Row>
         </Col>
       </Row>
     );
