@@ -20,6 +20,7 @@
     "react-scripts": "1.0.17",
     "reactstrap": "^5.0.0-alpha.4",
     "truffle-contract": "^3.0.1",
+    "wallet-address-validator": "^0.1.2",
     "web3": "^0.18.4",
     "web3-provider-engine": "^8.6.1"
   },

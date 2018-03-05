@@ -236,8 +236,8 @@ class Crowdsale extends Component {
 
         if (isAddress && isNumber) {
             if (await this.feasibility(instanceCrowdsale.manualReserve, [
-                reserveReceiver, reserveAmount, { from: web3.eth.accounts[0], gas: 300000 }
-            ])) {
+                    reserveReceiver, reserveAmount, { from: web3.eth.accounts[0], gas: 300000 }
+                ])) {
                 const tokensSold = await instanceCrowdsale.tokensSold();
 
                 this.setState({ tokensSold });
