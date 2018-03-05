@@ -10,9 +10,14 @@ class BTCSupport extends Component {
             ETHAddress: '',
             BTCAddress: '',
             message: '',
+
+            sendBtnStateETH: false,
+            sendBtnStateBTC: false,
         };
 
-        this.changeValue = this.changeValue.bind(this);
+        this.buttonStateChange = this.buttonStateChange.bind(this);
+        this.isETHAddress = this.isETHAddress.bind(this);
+        this.isBTCAddress = this.isBTCAddress.bind(this);
         this.buyTokens = this.buyTokens.bind(this);
 
     }
@@ -23,86 +28,86 @@ class BTCSupport extends Component {
 
         if (web3) {
             const ETHAddress = web3.eth.accounts[0];
+            const sendBtnStateETH = true;
 
-            this.setState({ETHAddress});
+            this.setState({
+                ETHAddress,
+                sendBtnStateETH
+            });
 
         }
 
     }
 
-    async changeValue(name, value) {
+    async isETHAddress(address) {
+        const { web3 } = this.props;
+        return web3.isAddress(address);
+    }
+
+    async isBTCAddress(address) {
+        let WAValidator = require('wallet-address-validator');
+        return WAValidator.validate(address, 'BTC');
+    }
+
+    async buttonStateChange(param, value, button, func) {
+        const state = await func(value);
+
         this.setState({
-            [name]: value
+            [param]: value,
+            [button]: state
         });
     }
 
     async buyTokens() {
-        const { web3 } = this.props;
         let { ETHAddress, BTCAddress, message } = this.state;
-        let WAValidator = require('wallet-address-validator');
 
-        const isETHAddress = web3.isAddress(ETHAddress);
-        const isBTCAddress = WAValidator.validate(BTCAddress, 'BTC');
+        try {
+            let header = new Headers({
+                'Access-Control-Allow-Origin': '*',
+                'Content-Type': 'application/json'
+            });
 
-        if (isETHAddress && isBTCAddress) {
-
-            try {
-                let header = new Headers({
-                    'Access-Control-Allow-Origin': '*',
-                    'Content-Type': 'application/json'
-                });
-
-                console.log("------------");
-                const resp = await fetch('http://162.213.252.104:9091/v1/getBTCWallet', {
-                    method: 'POST',
-                    header,
-                    body: JSON.stringify({
-                        ethAddress: ETHAddress,
+            console.log("------------");
+            const resp = await fetch('http://162.213.252.104:9091/v1/getBTCWallet', {
+                method: 'POST',
+                header,
+                body: JSON.stringify({
+                    ethAddress: ETHAddress,
 //                        btcAddress: BTCAddress
-                    }),
-                });
-                const data = await resp.json();
-                console.log('Resp: ', resp);
-                console.log('Data: ', data);
-                if (data.btcAddress) {
-                    message =
-                        <div>
-                            <Alert color="success">
-                                <h4 className="alert-heading">Well done!</h4>
-                                <p>Please send BTC on this address:</p>
-                                <p>{data.btcAddress}</p>
-                            </Alert>
-                        </div>;
-                }
-                if (data.error) {
-                    message =
-                        <div>
-                            <Alert color="danger">
-                                <h4 className="alert-heading">Error!</h4>
-                                <p>{data.error}</p>
-                            </Alert>
-                        </div>;
-                }
-                this.setState({message});
-            } catch (err) {
-                console.log("failed to fetch BTC address");
+                }),
+            });
+            const data = await resp.json();
+            console.log('Resp: ', resp);
+            console.log('Data: ', data);
+            if (data.btcAddress) {
+                message =
+                    <div>
+                        <Alert color="success">
+                            <h4 className="alert-heading">Well done!</h4>
+                            <p>Please send BTC on this address:</p>
+                            <p>{data.btcAddress}</p>
+                        </Alert>
+                    </div>;
             }
-
-        } else {
-
-            if (!isETHAddress) {
-                alert(`${ETHAddress} is not ETH address!`)
+            if (data.error) {
+                message =
+                    <div>
+                        <Alert color="danger">
+                            <h4 className="alert-heading">Error!</h4>
+                            <p>{data.error}</p>
+                        </Alert>
+                    </div>;
             }
-            if (!isBTCAddress) {
-                alert(`${BTCAddress} is not BTC address!`)
-            }
+            this.setState({message});
+        } catch (err) {
+            console.log("failed to fetch BTC address");
         }
 
     }
 
     render() {
         const {
-            ETHAddress, BTCAddress, message
+            ETHAddress, BTCAddress, message, sendBtnStateETH, sendBtnStateBTC
         } = this.state;
 
         return (
@@ -114,22 +119,23 @@ class BTCSupport extends Component {
                         <CardText>
                             <Input
                                 value={ETHAddress}
-                                onChange={e => this.changeValue("ETHAddress", e.target.value)}
+                                onChange={e => this.buttonStateChange("ETHAddress", e.target.value, "sendBtnStateETH", this.isETHAddress)}
                                 onKeyDown={this.handleSubmit}
                                 placeholder="ETH address"
                             />
                             <Input
                                 value={BTCAddress}
-                                onChange={e => this.changeValue("BTCAddress", e.target.value)}
+                                onChange={e => this.buttonStateChange("BTCAddress", e.target.value, "sendBtnStateBTC", this.isBTCAddress)}
                                 onKeyDown={this.handleSubmit}
                                 placeholder="BTC address"
                             />
                         </CardText>
                         <Row style={{justifyContent: 'center'}}>
                             <Button
-                            className="funcButton"
-                            color="info"
-                            onClick={() => this.buyTokens()}
+                                className="funcButton"
+                                color="info"
+                                onClick={() => this.buyTokens()}
+                                disabled={!(sendBtnStateETH && sendBtnStateBTC)}
                             >Get My Wallets
                             </Button>
                         </Row>
@@ -150,34 +156,3 @@ BTCSupport.propTypes = {
 };
 
 export default BTCSupport;
-/*
-            <Row className="funcRow">
-                <Col md={{ size: 3 }}>
-                    <Row className="funcLabel">Buy Tokens</Row>
-                </Col>
-                <Col md={{ size: 6 }}>
-                    <Input
-                        value={ETHAddress}
-                        onChange={e => this.changeValue("ETHAddress", e.target.value)}
-                        onKeyDown={this.handleSubmit}
-                        placeholder="ETH address"
-                    />
-                    <Input
-                        value={BTCAddress}
-                        onChange={e => this.changeValue("BTCAddress", e.target.value)}
-                        onKeyDown={this.handleSubmit}
-                        placeholder="BTC address"
-                    />
-                </Col>
-                <Col md={{ size: 3 }} style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                    <Row>
-                        <Button
-                            className="funcButton"
-                            color="info"
-                            onClick={() => this.buyTokens()}
-                        >Get My Wallets
-                        </Button>
-                    </Row>
-                </Col>
-            </Row>
- */
