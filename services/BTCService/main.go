@@ -12,29 +12,29 @@ import (
 )
 
 func main() {
-	// Parse flags
+	// parse flags
 	prod := flag.Bool("prod", false, "Run in production mode.")
 	flag.Parse()
 
 	defer utils.RecoverWatcher()
 
-	// Parse configs
+	// parse configs
 	conf, err := configs.ParseConfigs("./configs.toml", *prod)
 	if err != nil {
 		fmt.Println("failed to parse configs:", err.Error())
 		return
 	}
 
-	// Setup prod features
+	// setup prod features
 	if *prod {
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
-			fmt.Println("failed setup log file:", err.Error())
+			fmt.Println("failed to setup log file:", err.Error())
 			return
 		}
 	}
 
-	// Connect to BTC Node
+	// connect to BTC Node
 	fmt.Println("Connecting to node...")
 	err = btc.StartRPCConnection()
 	if err != nil {
@@ -42,7 +42,7 @@ func main() {
 		return
 	}
 
-	// Start TCP Server
+	// start TCP Server
 	fmt.Println("Launching BTCService...")
 	if err := service.StartTCPServer(conf.Server.TCPPort); err != nil {
 		log.Println("filed to start tcp server:", err.Error())
