@@ -8,7 +8,7 @@ import (
 	"os/signal"
 
 	"WindToken/utils"
-	"WindToken/configs"
+	"WindToken/services/BTCService/configs"
 	"WindToken/services/BTCService/service"
 	"WindToken/services/BTCService/btc"
 	"WindToken/services/BTCService/store"
