@@ -12,11 +12,12 @@ import (
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/services/BTCService/btc"
+	"log"
 )
 
 // StartTCPServer starts TCP listening on certain port
-func StartTCPServer(port uint) (err error) {
-	l, err := net.Listen("tcp", "127.0.0.1:8082")
+func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
+	l, err := net.Listen("tcp", "127.0.0.1:8082") // TODO: Use port from configs
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -30,11 +31,17 @@ func StartTCPServer(port uint) (err error) {
 			continue
 		}
 
-		go handleConnection(conn)
+		btcWatcher.OnNewValue = func(value float64, from string) {
+			// TODO: Send data in gob
+			log.Println("------------ amount", value, "from:", from)
+			conn.Write([]byte("hello\n"))
+		}
+
+		go handleConnection(conn,  btcWatcher)
 	}
 }
 
-func handleConnection(conn net.Conn) {
+func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 	defer conn.Close()
 
 	r := bufio.NewReader(conn)
@@ -55,7 +62,7 @@ func handleConnection(conn net.Conn) {
 
 		switch message.Type {
 		case messageTypes.WATCH_ADDRESS:
-			go btc.StartWatchingAddress(message.Address)
+			go btcWatcher.StartWatchingAddress(message.Address)
 		default:
 			continue
 		}

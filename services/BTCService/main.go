@@ -51,7 +51,7 @@ func main() {
 
 	// Connect to BTC Node
 	fmt.Println("Connecting to node...")
-	err = btc.StartRPCConnection()
+	btcWatcher, err := btc.StartRPCConnection()
 	if err != nil {
 		fmt.Println("ERROR - failed connect to node", err.Error())
 		return
@@ -59,7 +59,7 @@ func main() {
 
 	// Start TCP Server
 	fmt.Println("Launching TCP...")
-	if err := service.StartTCPServer(conf.Server.TCPPort); err != nil {
+	if err := service.StartTCPServer(conf.Server.TCPPort, btcWatcher); err != nil {
 		log.Println("filed to start tcp server:", err.Error())
 	}
 }

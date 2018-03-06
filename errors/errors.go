@@ -3,6 +3,7 @@ package errors
 import (
 	"log"
 	"fmt"
+	"errors"
 )
 
 const (
@@ -20,6 +21,10 @@ func LogError(err error, description ...interface{}) {
 
 func Fatal(err error, description ...interface{}) {
 	panic(fmt.Sprint(fmt.Sprint(description...), " : ", getErrStr(err)))
+}
+
+func Combine(err error, description ...interface{}) error {
+	return errors.New(fmt.Sprintf("%s: %s", fmt.Sprint(description...), getErrStr(err)))
 }
 
 func getErrStr(err error) (errStr string) {
