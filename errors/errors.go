@@ -14,7 +14,6 @@ const (
 	ErrorFindAddress           = "address not found"
 )
 
-// TODO: Write logs to file
 func LogError(err error, description ...interface{}) {
 	log.Println("ERROR -", fmt.Sprint(description...), ":", getErrStr(err))
 }

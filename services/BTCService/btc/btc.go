@@ -42,9 +42,6 @@ func StartRPCConnection() (watcher *Watcher, err error) {
 
 	watcher = &Watcher{sync.Mutex{}, client,0, nil}
 
-	// TODO: Move it
-	go watcher.StartWatchingAddress("mxjq47LnJMfg3aLkmF943kLU1xYkxcZnk3")
-
 	return
 }
 
@@ -96,10 +93,9 @@ func (w *Watcher) WatchAddress(addr string) error {
 		stillOwner := w.CheckActiveWatcherIdChanged(selfId)
 		if !stillOwner { return nil }
 
-		// TODO: Check if it's new block by height
 		bCount, err := w.client.GetBlockCount()
 		if err != nil { return err }
-		log.Println("blocks count:", bCount) // TODO: Remove
+		log.Println("blocks count:", bCount)
 
 		// If lastHandledBlock backward in time
 		backwardInTime := false
@@ -168,18 +164,9 @@ func (w *Watcher) WatchAddress(addr string) error {
 
 		// Sleep for 1 minute
 		if !backwardInTime {
-			log.Println("-------------------------Wait for new block")
 			time.Sleep(1 * time.Minute)
 		}
 	}
 
 	return nil
 }
-
-//connCfg := &rpcclient.ConnConfig{
-//Host:         "162.213.252.104:8332",
-//User:         "bitcoin",
-//Pass:         "local321",
-//HTTPPostMode: true,
-//DisableTLS:   true,
-//}

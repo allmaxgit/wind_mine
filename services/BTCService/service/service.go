@@ -8,16 +8,17 @@ import (
 	"io"
 	"bytes"
 	"encoding/gob"
+	"log"
 
+	uErr "WindToken/errors"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/services/BTCService/btc"
-	"log"
 )
 
 // StartTCPServer starts TCP listening on certain port
 func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
-	l, err := net.Listen("tcp", "127.0.0.1:8082") // TODO: Use port from configs
+	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	if err != nil {
 		fmt.Println("ERROR", err)
 		os.Exit(1)
@@ -31,10 +32,23 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			continue
 		}
 
-		btcWatcher.OnNewValue = func(value float64, from string) {
-			// TODO: Send data in gob
-			log.Println("------------ amount", value, "from:", from)
-			conn.Write([]byte("hello\n"))
+		if btcWatcher.OnNewValue == nil {
+			btcWatcher.OnNewValue = func(value float64, from string) {
+				var message bytes.Buffer
+				enc := gob.NewEncoder(&message)
+				enc.Encode(types.BTCServiceResp{
+					Type: messageTypes.VALUE_RECEIVED,
+					Value: value,
+					From: from,
+				})
+
+				// TODO: Remove log
+				log.Println("------------ amount", value, "from:", from)
+
+				_, err = conn.Write(append(message.Bytes(), '\n'))
+				if err != nil { uErr.Fatal(err, "failed to send response") }
+
+			}
 		}
 
 		go handleConnection(conn,  btcWatcher)
@@ -49,11 +63,11 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 		line, err := r.ReadBytes(byte('\n'))
 		if err != nil {
 			if err == io.EOF { break }
-			panic(err) // TODO: Improve
+			uErr.LogError(err, "filed to read message")
 		}
 
 		r := bytes.NewReader(line)
-		var message types.ServicePayload
+		var message types.BTCServiceReq
 		dec := gob.NewDecoder(r)
 		err = dec.Decode(&message)
 		if err != nil {
