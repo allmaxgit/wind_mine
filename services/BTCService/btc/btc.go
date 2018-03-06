@@ -20,7 +20,7 @@ type Info struct {
 
 const (
 	ACCOUNT   = "mainAccount"
-	CACHE_KEY = "lastHandledBTCBlock"
+	LAST_BLOCK_KEY = "lastHandledBTCBlock"
 )
 
 var (
@@ -87,7 +87,7 @@ func WatchAddress(addr string) error {
 	}
 
 	var lastHandledBlock int64
-	lastHandledBlockFromCache, found := store.Get(CACHE_KEY)
+	lastHandledBlockFromCache, found := store.Get(LAST_BLOCK_KEY)
 	if found {
 		lastHandledBlock = lastHandledBlockFromCache.(int64)
 	}
@@ -145,7 +145,7 @@ func WatchAddress(addr string) error {
 		}
 
 		// Save last handled block
-		store.Set(CACHE_KEY, bCount)
+		store.Set(LAST_BLOCK_KEY, bCount)
 		lastHandledBlock++
 
 		// Sleep for 1 minute

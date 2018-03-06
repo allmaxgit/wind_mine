@@ -9,12 +9,9 @@ import (
 	"bytes"
 	"encoding/gob"
 
-	uErr "WindToken/errors"
-
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/services/BTCService/btc"
-	"github.com/rcrowley/go-metrics"
 )
 
 // StartTCPServer starts TCP listening on certain port
@@ -63,10 +60,10 @@ func handleConnection(conn net.Conn) {
 			continue
 		}
 
-		if err != nil {
-			uErr.LogError(err, "filed to handle message with type:", message.Type)
-			continue
-		}
+		//if err != nil {
+		//	uErr.LogError(err, "filed to handle message with type:", message.Type)
+		//	continue
+		//}
 
 		fmt.Println(message, line)
 	}
