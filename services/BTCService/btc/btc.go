@@ -64,10 +64,10 @@ func StartRPCConnection() (err error) {
 	client, err = rpcclient.New(connCfg, nil)
 	if err != nil { return }
 
+	info = Info{sync.Mutex{}, 0}
+
 	// TODO: Move it
 	go WatchAddress("mxjq47LnJMfg3aLkmF943kLU1xYkxcZnk3")
-
-	info = Info{sync.Mutex{}, 0}
 
 	return
 }

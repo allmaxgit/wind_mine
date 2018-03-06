@@ -4,6 +4,8 @@ import (
 	"flag"
 	"log"
 	"fmt"
+	"os"
+	"os/signal"
 
 	"WindToken/utils"
 	"WindToken/configs"
@@ -17,7 +19,16 @@ func main() {
 	prod := flag.Bool("prod", false, "Run in production mode.")
 	flag.Parse()
 
-	defer utils.RecoverWatcher()
+	defer utils.RecoverWatcher(shutdown)
+
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, os.Kill)
+	go func() {
+		select {
+		case <-sig:
+			shutdown(nil)
+		}
+	}()
 
 	// Initiate store
 	store.InitiateStore()
@@ -51,4 +62,9 @@ func main() {
 	if err := service.StartTCPServer(conf.Server.TCPPort); err != nil {
 		log.Println("filed to start tcp server:", err.Error())
 	}
+}
+
+func shutdown(r interface{}) {
+	log.Println("Shutdown")
+	os.Exit(1)
 }
