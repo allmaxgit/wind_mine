@@ -9,6 +9,8 @@ const (
 	ErrorSelectFromDBShort     = "code 1"
 
 	ErrorSelectFromDB          = "failed to select from db"
+	ErrorUpdateCache           = "failed to update cache"
+	ErrorFindAddress           = "address not found"
 )
 
 // TODO: Write logs to file

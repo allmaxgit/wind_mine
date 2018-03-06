@@ -1,5 +1,5 @@
 package messageTypes
 
 const (
-	SET_ADDRESS = "SET_ADDRESS"
+	WATCH_ADDRESS = "WATCH_ADDRESS"
 )

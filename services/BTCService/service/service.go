@@ -14,6 +14,7 @@ import (
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/services/BTCService/btc"
+	"github.com/rcrowley/go-metrics"
 )
 
 // StartTCPServer starts TCP listening on certain port
@@ -56,8 +57,8 @@ func handleConnection(conn net.Conn) {
 		}
 
 		switch message.Type {
-		case messageTypes.SET_ADDRESS:
-			err = btc.WatchAddress(message.Address)
+		case messageTypes.WATCH_ADDRESS:
+			go btc.StartWatchingAddress(message.Address)
 		default:
 			continue
 		}

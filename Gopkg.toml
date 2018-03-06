@@ -29,10 +29,15 @@
   name = "github.com/BurntSushi/toml"
   version = "0.3.0"
 
+[[constraint]]
+  name = "github.com/patrickmn/go-cache"
+  version = "2.1.0"
+
+[[constraint]]
+  name = "github.com/btcsuite/btcd"
+  source = "github.com/btcsuite/btcd"
+
 [prune]
   go-tests = true
   unused-packages = true
 
-[[constraint]]
-  name = "github.com/patrickmn/go-cache"
-  version = "2.1.0"

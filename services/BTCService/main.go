@@ -9,6 +9,7 @@ import (
 	"WindToken/configs"
 	"WindToken/services/BTCService/service"
 	"WindToken/services/BTCService/btc"
+	"WindToken/services/BTCService/store"
 )
 
 func main() {
@@ -17,6 +18,9 @@ func main() {
 	flag.Parse()
 
 	defer utils.RecoverWatcher()
+
+	// Initiate store
+	store.InitiateStore()
 
 	// Parse configs
 	conf, err := configs.ParseConfigs("./configs.toml", *prod)
