@@ -5,8 +5,10 @@ import (
 )
 
 type Configs struct {
-	Common Common
-	Server Server
+	Common   Common
+	Server   Server
+	Crypto   Crypto
+	Services Services
 }
 
 type Common struct {
@@ -16,6 +18,14 @@ type Common struct {
 
 type Server struct {
 	TCPPort uint `toml:"tcpPort"`
+}
+
+type Crypto struct {
+	BTCAddr string `toml:"btcAddress"`
+}
+
+type Services struct {
+	BTCServicePort uint `toml:"btcServicePort"`
 }
 
 var configs Configs

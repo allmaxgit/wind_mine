@@ -2,4 +2,11 @@
     logOutPath = "./out/out.log"
 
 [server]
-    tcpPort = 8082
+    tcpPort = 8080
+
+[crypto]
+    # BTC
+    btcAddress = "1NS4gbx1G2D5rc9PnvVsPys12nKxGiQg72"
+
+[services]
+    btcServicePort = 8082

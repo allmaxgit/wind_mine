@@ -6,6 +6,7 @@ import (
 	"log"
 	"fmt"
 
+	uErr "WindToken/errors"
 	"WindToken/utils"
 	"WindToken/configs"
 	"WindToken/crypto/btc"
@@ -25,7 +26,7 @@ func main() {
 	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
 		fmt.Println("ERROR - failed to parse configs:", err.Error())
-		return
+		os.Exit(1)
 	}
 
 	// Setup prod env
@@ -35,15 +36,33 @@ func main() {
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
 			fmt.Println("ERROR - failed to setup log file:", err.Error())
-			return
+			os.Exit(1)
 		}
 	}
 
 	// Start connection with BTCService
-	btc.Dial()
+	for i := 0; i < 4; i++ {
+		err = btc.Dial(conf)
+		if err != nil {
+			fmt.Println("ERROR - failed to dial tcp with BTC service")
+			continue
+		}
+	}
+
+	if err = btc.Dial(conf); err != nil {
+		if err.Error() == uErr.ErrorConnectBTCService {
+			uErr.Fatal(err, "failed to dial tcp")
+		} else {
+			fmt.Println("ERROR - failed to dial tcp", err.Error())
+			os.Exit(1)
+		}
+	}
 }
 
-func shutdown(r interface{}) {
+func shutdown(fatal bool, r interface{}) {
 	log.Println("Shutdown")
-	os.Exit(1)
+	if fatal {
+		os.Exit(1)
+	}
+	os.Exit(0)
 }

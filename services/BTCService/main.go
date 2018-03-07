@@ -28,7 +28,7 @@ func main() {
 	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
 		fmt.Println("ERROR - failed to parse configs:", err.Error())
-		return
+		os.Exit(1)
 	}
 
 	// Setup prod env
@@ -38,7 +38,7 @@ func main() {
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
 			fmt.Println("ERROR - failed to setup log file:", err.Error())
-			return
+			os.Exit(1)
 		}
 	}
 
@@ -47,7 +47,7 @@ func main() {
 	btcWatcher, err := btc.StartRPCConnection()
 	if err != nil {
 		fmt.Println("ERROR - failed connect to node", err.Error())
-		return
+		os.Exit(1)
 	}
 
 	// Start TCP Server
@@ -57,7 +57,10 @@ func main() {
 	}
 }
 
-func shutdown(r interface{}) {
+func shutdown(fatal bool, r interface{}) {
 	log.Println("Shutdown")
-	os.Exit(1)
+	if fatal {
+		os.Exit(1)
+	}
+	os.Exit(0)
 }

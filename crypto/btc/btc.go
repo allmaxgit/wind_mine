@@ -3,44 +3,42 @@ package btc
 import (
 	"net"
 	"fmt"
-	"os"
 	"bytes"
 	"encoding/gob"
 	"bufio"
 	"io"
 
 	uErr "WindToken/errors"
+	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 )
 
 // Dial starts connection with BTCService via tcp
-func Dial() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8082")
-	if err != nil {
-		uErr.Fatal(err, "failed to dial tcp")
-	}
+func Dial(conf *configs.Configs) (err error) {
+	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", conf.Services.BTCServicePort))
+	if err != nil { return }
 
 	var message bytes.Buffer
 	enc := gob.NewEncoder(&message)
-	enc.Encode(types.BTCServiceReq{Type: messageTypes.WATCH_ADDRESS, Address: "address"})
+	enc.Encode(types.BTCServiceReq{
+		Type: messageTypes.WATCH_ADDRESS,
+		Address: conf.Crypto.BTCAddr,
+	})
 
 	response := bufio.NewReader(conn)
 	_, err = conn.Write(append(message.Bytes(), '\n'))
-	if err != nil {
-		uErr.Fatal(err, "failed to send message to BTCService")
-	}
+	if err != nil { return }
 
 	for {
-		serverLine, err := response.ReadBytes(byte('\n'))
+		message, err := response.ReadBytes(byte('\n'))
 		switch err {
 		case nil:
-			fmt.Print(string(serverLine))
+			fmt.Println("Message from server", string(message))
 		case io.EOF:
-			os.Exit(0)
+			return uErr.Combine(nil, uErr.ErrorConnectBTCService)
 		default:
-			fmt.Println("ERROR", err)
-			os.Exit(2)
+			return err
 		}
 	}
 }

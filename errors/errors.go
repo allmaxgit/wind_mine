@@ -12,6 +12,7 @@ const (
 	ErrorSelectFromDB          = "failed to select from db"
 	ErrorUpdateCache           = "failed to update cache"
 	ErrorFindAddress           = "address not found"
+	ErrorConnectBTCService     = "btc service shutdown"
 )
 
 func LogError(err error, description ...interface{}) {
