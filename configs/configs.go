@@ -39,7 +39,7 @@ type DB struct {
 
 var configs Configs
 
-// ParseConfigs parses and returns configs from toml file
+// ParseConfigs parses and returns configs from toml file.
 func ParseConfigs(confPath string) (*Configs, error) {
 	if _, err := toml.DecodeFile(confPath, &configs); err != nil {
 		return nil, err

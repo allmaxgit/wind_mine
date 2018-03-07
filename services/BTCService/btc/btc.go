@@ -27,7 +27,7 @@ const (
 	LAST_BLOCK_KEY = "lastHandledBTCBlock"
 )
 
-// StartRPCConnection starts connection to node
+// StartRPCConnection starts connection to node.
 func StartRPCConnection() (watcher *Watcher, err error) {
 	connCfg := &rpcclient.ConnConfig{
 		Host:         "162.213.252.104:8332",
@@ -45,7 +45,7 @@ func StartRPCConnection() (watcher *Watcher, err error) {
 	return
 }
 
-// IncreaseActiveWatcherId increases ActiveWatcherId
+// IncreaseActiveWatcherId increases ActiveWatcherId.
 func (w *Watcher) IncreaseActiveWatcherId() uint8 {
 	w.mux.Lock()
 	defer w.mux.Unlock()
@@ -58,7 +58,7 @@ func (w *Watcher) IncreaseActiveWatcherId() uint8 {
 	return w.ActiveWatcherId
 }
 
-// CheckActiveWatcherIdChanged checks if ActiveWatcherId was changed
+// CheckActiveWatcherIdChanged checks if ActiveWatcherId was changed.
 func (w *Watcher) CheckActiveWatcherIdChanged(ownerId uint8) bool {
 	w.mux.Lock()
 	defer w.mux.Unlock()
@@ -67,7 +67,7 @@ func (w *Watcher) CheckActiveWatcherIdChanged(ownerId uint8) bool {
 	return false
 }
 
-// StartWatchingAddress handles error from WatchAddress
+// StartWatchingAddress handles error from WatchAddress.
 func (w *Watcher) StartWatchingAddress(addr string) {
 	err := w.WatchAddress(addr)
 	if err != nil {
@@ -75,7 +75,7 @@ func (w *Watcher) StartWatchingAddress(addr string) {
 	}
 }
 
-// WatchAddress adds listener for address
+// WatchAddress adds listener for address.
 func (w *Watcher) WatchAddress(addr string) error {
 	if addr == "" {
 		return errors.New(uErr.ErrorFindAddress)
@@ -97,7 +97,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 		if err != nil { return err }
 		log.Println("blocks count:", bCount)
 
-		// If lastHandledBlock backward in time
+		// If lastHandledBlock backward in time.
 		backwardInTime := false
 		if lastHandledBlock > 0 && bCount - lastHandledBlock > 1 {
 			bCount = lastHandledBlock + 1
@@ -116,15 +116,15 @@ func (w *Watcher) WatchAddress(addr string) error {
 		//txs, err := lastBlock.TxHashes()
 		//if err != nil { return }
 
-		// Filter transactions
+		// Filter transactions.
 		for _, txStr := range lastBlock.Tx {
 			txHash, _ := chainhash.NewHashFromStr(txStr)
 
-			// Get transaction
+			// Get transaction.
 			tx, err := w.client.GetRawTransactionVerbose(txHash)
 			if err != nil { return err }
 
-			// Filter addresses
+			// Filter addresses.
 			for _, vout := range tx.Vout {
 				for _, fAddr := range vout.ScriptPubKey.Addresses {
 					log.Println("Address:", fAddr)
@@ -136,7 +136,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 						log.Println("vout:", vout)
 						log.Println("------------------")
 
-						// Detect TX owner
+						// Detect TX owner.
 						in := tx.Vin[0]
 						ownerTxHash, _ := chainhash.NewHashFromStr(in.Txid)
 						ownerTxOutIndex := in.Vout
@@ -158,11 +158,11 @@ func (w *Watcher) WatchAddress(addr string) error {
 			}
 		}
 
-		// Save last handled block
+		// Save last handled block.
 		store.Set(LAST_BLOCK_KEY, bCount)
 		lastHandledBlock++
 
-		// Sleep for 1 minute
+		// Sleep for 1 minute.
 		if !backwardInTime {
 			time.Sleep(1 * time.Minute)
 		}

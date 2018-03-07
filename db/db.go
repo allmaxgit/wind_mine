@@ -15,6 +15,7 @@ var (
 	Instance *pg.DB
 )
 
+// Initiate creates DB instance.
 func Initiate(conf configs.DB) (err error) {
 	log.Println("initiate database")
 	Instance = pg.Connect(&pg.Options{
@@ -44,6 +45,7 @@ func createSchema() error {
 	return nil
 }
 
+// IsNotFoundError return true if no rows found.
 func IsNotFoundError(err error) bool {
 	return err.Error() == pg.ErrNoRows.Error()
 }

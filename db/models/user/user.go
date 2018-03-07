@@ -5,7 +5,7 @@ import (
 	"WindToken/db/types"
 )
 
-// FindUserByETH returns user by ethAddr
+// FindUserByETH returns user by ethAddr.
 func FindUserByETH(ethAddr string) (*types.User, bool, error) {
 	var result types.User
 	err := db.Instance.Model(&result).

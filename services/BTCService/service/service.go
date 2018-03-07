@@ -16,7 +16,7 @@ import (
 	"WindToken/services/BTCService/btc"
 )
 
-// StartTCPServer starts TCP listening on certain port
+// StartTCPServer starts TCP listening on certain port.
 func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	if err != nil {

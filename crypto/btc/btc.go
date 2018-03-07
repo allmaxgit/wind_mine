@@ -14,7 +14,7 @@ import (
 	"WindToken/constants/messageTypes"
 )
 
-// Dial starts connection with BTCService via tcp
+// Dial starts connection with BTCService via tcp.
 func Dial(conf *configs.Configs) (err error) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", conf.Services.BTCServicePort))
 	if err != nil { return }

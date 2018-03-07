@@ -23,14 +23,14 @@ func main() {
 	// Initiate store
 	//store.InitiateStore()
 
-	// Parse configs
+	// Parse configs.
 	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
 		fmt.Println("ERROR - failed to parse configs:", err.Error())
 		os.Exit(1)
 	}
 
-	// Setup prod env
+	// Setup prod env.
 	envType := "dev"
 	if *prod {
 		envType = "prod"
@@ -43,14 +43,14 @@ func main() {
 		}
 	}
 
-	// Initiate database
+	// Initiate database.
 	err = db.Initiate(conf.DB[envType])
 	if err != nil {
 		panic(fmt.Sprintf("failed to initialize db: %s", err.Error()))
 	}
 	defer db.Instance.Close()
 
-	// Start connection with BTCService
+	// Start connection with BTCService.
 	fmt.Println("Start btc service connection...")
 	if err = btc.Dial(conf); err != nil {
 		if err.Error() == uErr.ErrorConnectBTCService {
