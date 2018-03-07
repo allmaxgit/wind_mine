@@ -5,7 +5,6 @@ import (
 	"log"
 	"fmt"
 	"os"
-	"os/signal"
 
 	"WindToken/utils"
 	"WindToken/services/BTCService/configs"
@@ -20,28 +19,22 @@ func main() {
 	flag.Parse()
 
 	defer utils.RecoverWatcher(shutdown)
-
-	sig := make(chan os.Signal, 1)
-	signal.Notify(sig, os.Interrupt, os.Kill)
-	go func() {
-		select {
-		case <-sig:
-			shutdown(nil)
-		}
-	}()
+	go utils.ShutdownWatcher(shutdown)
 
 	// Initiate store
 	store.InitiateStore()
 
 	// Parse configs
-	conf, err := configs.ParseConfigs("./configs.toml", *prod)
+	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
 		fmt.Println("ERROR - failed to parse configs:", err.Error())
 		return
 	}
 
-	// Setup prod features
+	// Setup prod env
 	if *prod {
+		conf.Common.Dev = false
+
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
 			fmt.Println("ERROR - failed to setup log file:", err.Error())

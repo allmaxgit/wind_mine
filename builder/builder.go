@@ -1,14 +1,15 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"strings"
-	"os/exec"
 	"log"
+	"os"
+	"os/exec"
+	"path"
+	"strings"
 )
 
-var outPath = "./cmd/WindToken"
+var mainPkgOutPath = "./out/builds/WindToken"
 
 func main() {
 	pwd, err := os.Getwd()
@@ -18,7 +19,7 @@ func main() {
 	}
 
 	path := strings.Split(pwd, "/")
-	rootDir := path[len(path) - 1]
+	rootDir := path[len(path)-1]
 
 	if rootDir != "WindToken" {
 		log.Fatalln("please run it from 'WindToken' dir")
@@ -28,20 +29,22 @@ func main() {
 	// Run commands
 	buildPkg("")
 	buildPkg("./services/BTCService")
+	buildPkg("./services/ExchangeRateService")
 
 	fmt.Println("success")
 }
 
 func buildPkg(pkgPath string) {
 	if pkgPath == "" {
-		runCommand("go", "build", "-o", outPath)
+		runCommand("go", "build", "-o", mainPkgOutPath)
 	} else {
-		runCommand("go", "build", "-o", outPath, pkgPath)
+		_, file := path.Split(pkgPath)
+		runCommand("go", "build", "-o", "./out/builds/" + file, pkgPath)
 	}
 }
 
 func runCommand(cmd string, args ...string) {
 	if err := exec.Command(cmd, args...).Run(); err != nil {
-		log.Fatalln(os.Stderr, err)
+		log.Fatalln("failed to exec command", err)
 	}
 }
