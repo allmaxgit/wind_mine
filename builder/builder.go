@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var outPath = "./cmd/WindToken"
+var mainPkgOutPath = "./out/builds/WindToken"
 
 func main() {
 	pwd, err := os.Getwd()
@@ -36,15 +36,15 @@ func main() {
 
 func buildPkg(pkgPath string) {
 	if pkgPath == "" {
-		runCommand("go", "build", "-o", outPath)
+		runCommand("go", "build", "-o", mainPkgOutPath)
 	} else {
 		_, file := path.Split(pkgPath)
-		runCommand("go", "build", "-o", "./cmd/"+file, pkgPath)
+		runCommand("go", "build", "-o", "./out/builds/" + file, pkgPath)
 	}
 }
 
 func runCommand(cmd string, args ...string) {
 	if err := exec.Command(cmd, args...).Run(); err != nil {
-		log.Fatalln(os.Stderr, err)
+		log.Fatalln("failed to exec command", err)
 	}
 }

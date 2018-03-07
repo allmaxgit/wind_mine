@@ -1,45 +1,49 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net"
+	"flag"
 	"os"
+	"log"
+	"fmt"
 
-	"WindToken/constants/messageTypes"
-	"WindToken/types"
-	"bytes"
-	"encoding/gob"
+	"WindToken/utils"
+	"WindToken/configs"
+	"WindToken/crypto/btc"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8082")
+	prod := flag.Bool("prod", false, "Run in production mode.")
+	flag.Parse()
+
+	defer utils.RecoverWatcher(shutdown)
+	go utils.ShutdownWatcher(shutdown)
+
+	// Initiate store
+	//store.InitiateStore()
+
+	// Parse configs
+	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
+		fmt.Println("ERROR - failed to parse configs:", err.Error())
+		return
 	}
 
-	var message bytes.Buffer
-	enc := gob.NewEncoder(&message)
-	enc.Encode(types.ServicePayload{Type: messageTypes.SET_ADDRESS, Address: "address"})
+	// Setup prod env
+	if *prod {
+		conf.Common.Dev = false
 
-	response := bufio.NewReader(conn)
-	_, err = conn.Write(append(message.Bytes(), '\n'))
-	if err != nil {
-		panic(err)
-	}
-
-	for {
-		serverLine, err := response.ReadBytes(byte('\n'))
-		switch err {
-		case nil:
-			fmt.Print(string(serverLine))
-		case io.EOF:
-			os.Exit(0)
-		default:
-			fmt.Println("ERROR", err)
-			os.Exit(2)
+		err := utils.SetupLogFile("logPath")
+		if err != nil {
+			fmt.Println("ERROR - failed to setup log file:", err.Error())
+			return
 		}
 	}
+
+	// Start connection with BTCService
+	btc.Dial()
+}
+
+func shutdown(r interface{}) {
+	log.Println("Shutdown")
+	os.Exit(1)
 }
