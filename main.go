@@ -1,45 +1,71 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
-	"io"
-	"net"
+	"flag"
 	"os"
+	"log"
+	"fmt"
 
-	"WindToken/constants/messageTypes"
-	"WindToken/types"
-	"bytes"
-	"encoding/gob"
+	uErr "WindToken/errors"
+	"WindToken/db"
+	"WindToken/utils"
+	"WindToken/configs"
+	"WindToken/crypto/btc"
 )
 
 func main() {
-	conn, err := net.Dial("tcp", "127.0.0.1:8082")
+	prod := flag.Bool("prod", false, "Run in production mode.")
+	flag.Parse()
+
+	defer utils.RecoverWatcher(shutdown)
+	go utils.ShutdownWatcher(shutdown)
+
+	// Initiate store
+	//store.InitiateStore()
+
+	// Parse configs.
+	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
-		fmt.Println("ERROR", err)
+		fmt.Println("ERROR - failed to parse configs:", err.Error())
 		os.Exit(1)
 	}
 
-	var message bytes.Buffer
-	enc := gob.NewEncoder(&message)
-	enc.Encode(types.ServicePayload{Type: messageTypes.SET_ADDRESS, Address: "address"})
+	// Setup prod env.
+	envType := "dev"
+	if *prod {
+		envType = "prod"
+		conf.Common.Dev = false
 
-	response := bufio.NewReader(conn)
-	_, err = conn.Write(append(message.Bytes(), '\n'))
-	if err != nil {
-		panic(err)
-	}
-
-	for {
-		serverLine, err := response.ReadBytes(byte('\n'))
-		switch err {
-		case nil:
-			fmt.Print(string(serverLine))
-		case io.EOF:
-			os.Exit(0)
-		default:
-			fmt.Println("ERROR", err)
-			os.Exit(2)
+		err := utils.SetupLogFile("logPath")
+		if err != nil {
+			fmt.Println("ERROR - failed to setup log file:", err.Error())
+			os.Exit(1)
 		}
 	}
+
+	// Initiate database.
+	err = db.Initiate(conf.DB[envType])
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize db: %s", err.Error()))
+	}
+	defer db.Instance.Close()
+
+	// Start connection with BTCService.
+	fmt.Println("Start btc service connection...")
+	if err = btc.Dial(conf); err != nil {
+		if err.Error() == uErr.ErrorConnectBTCService {
+			uErr.Fatal(err, "failed to dial tcp")
+		} else {
+			fmt.Println("ERROR - failed to dial tcp", err.Error())
+			os.Exit(1)
+		}
+	}
+}
+
+func shutdown(fatal bool, r interface{}) {
+	log.Println("Shutdown")
+	if fatal {
+		os.Exit(1)
+	}
+	os.Exit(0)
 }

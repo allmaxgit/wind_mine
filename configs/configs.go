@@ -5,8 +5,11 @@ import (
 )
 
 type Configs struct {
-	Common Common
-	Server Server
+	Common   Common
+	Server   Server
+	Crypto   Crypto
+	Services Services
+	DB       map[string]DB `toml:"database"`
 }
 
 type Common struct {
@@ -18,15 +21,30 @@ type Server struct {
 	TCPPort uint `toml:"tcpPort"`
 }
 
+type Crypto struct {
+	BTCAddr string `toml:"btcAddress"`
+}
+
+type Services struct {
+	BTCServicePort uint `toml:"btcServicePort"`
+}
+
+type DB struct {
+	Host         string
+	Port         uint
+	Name         string
+	User         string
+	Password     string
+}
+
 var configs Configs
 
-// ParseConfigs parses and returns configs from toml file
-func ParseConfigs(confPath string, prod bool) (*Configs, error) {
+// ParseConfigs parses and returns configs from toml file.
+func ParseConfigs(confPath string) (*Configs, error) {
 	if _, err := toml.DecodeFile(confPath, &configs); err != nil {
 		return nil, err
 	}
 
-	configs.Common.Dev = !prod
 	return &configs, nil
 }
 

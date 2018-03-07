@@ -1,0 +1,27 @@
+[common]
+    logOutPath = "./out/out.log"
+
+[server]
+    tcpPort = 8080
+
+[crypto]
+    # BTC
+    btcAddress = "1NS4gbx1G2D5rc9PnvVsPys12nKxGiQg72"
+
+[services]
+    btcServicePort = 8082
+
+[database]
+    [database.dev]
+        host = "127.0.0.1"
+        port = 5432
+        name = "testuser"
+        user = "testuser"
+        password = "password"
+
+    [database.prod]
+        host = "127.0.0.1"
+        port = 5432
+        name = "prodDB"
+        user = "proUSER"
+        password = "prodPassword"
