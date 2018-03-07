@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	uErr "WindToken/errors"
+	"WindToken/db"
 	"WindToken/utils"
 	"WindToken/configs"
 	"WindToken/crypto/btc"
@@ -30,7 +31,9 @@ func main() {
 	}
 
 	// Setup prod env
+	envType := "dev"
 	if *prod {
+		envType = "prod"
 		conf.Common.Dev = false
 
 		err := utils.SetupLogFile("logPath")
@@ -40,15 +43,15 @@ func main() {
 		}
 	}
 
-	// Start connection with BTCService
-	for i := 0; i < 4; i++ {
-		err = btc.Dial(conf)
-		if err != nil {
-			fmt.Println("ERROR - failed to dial tcp with BTC service")
-			continue
-		}
+	// Initiate database
+	err = db.Initiate(conf.DB[envType])
+	if err != nil {
+		panic(fmt.Sprintf("failed to initialize db: %s", err.Error()))
 	}
+	defer db.Instance.Close()
 
+	// Start connection with BTCService
+	fmt.Println("Start btc service connection...")
 	if err = btc.Dial(conf); err != nil {
 		if err.Error() == uErr.ErrorConnectBTCService {
 			uErr.Fatal(err, "failed to dial tcp")

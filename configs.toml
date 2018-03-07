@@ -10,3 +10,18 @@
 
 [services]
     btcServicePort = 8082
+
+[database]
+    [database.dev]
+        host = "127.0.0.1"
+        port = 5432
+        name = "testuser"
+        user = "testuser"
+        password = "password"
+
+    [database.prod]
+        host = "127.0.0.1"
+        port = 5432
+        name = "prodDB"
+        user = "proUSER"
+        password = "prodPassword"

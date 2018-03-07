@@ -9,6 +9,7 @@ type Configs struct {
 	Server   Server
 	Crypto   Crypto
 	Services Services
+	DB       map[string]DB `toml:"database"`
 }
 
 type Common struct {
@@ -26,6 +27,14 @@ type Crypto struct {
 
 type Services struct {
 	BTCServicePort uint `toml:"btcServicePort"`
+}
+
+type DB struct {
+	Host         string
+	Port         uint
+	Name         string
+	User         string
+	Password     string
 }
 
 var configs Configs
