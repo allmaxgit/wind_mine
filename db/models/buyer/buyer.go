@@ -6,10 +6,10 @@ import (
 )
 
 // FindByBTCAddress returns buyer by ethAddr.
-func FindByBTCAddress(ethAddr string) (*types.Buyer, bool, error) {
+func FindByBTCAddress(btcAddr string) (*types.Buyer, bool, error) {
 	var result types.Buyer
 	err := db.Instance.Model(&result).
-		Where("eth_addr = ?", ethAddr).
+		Where("btc_addr = ?", btcAddr).
 		Select()
 	if err != nil {
 		if db.IsNotFoundError(err) {

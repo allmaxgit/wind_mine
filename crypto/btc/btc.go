@@ -12,6 +12,7 @@ import (
 	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
+	"WindToken/db/models/transaction"
 	"WindToken/db/models/buyer"
 )
 
@@ -55,14 +56,27 @@ func handleMessage(line []byte) {
 
 	switch message.Type {
 	case messageTypes.VALUE_RECEIVED:
-		updateBuyerBalance(message.Value, message.From)
+		updateBuyerBalance(message.Value, message.From, message.TXHash)
 	default:
 		return
 	}
 }
 
-func updateBuyerBalance(value float64, buyerAddr string) {
-	// TODO: Check transaction if exist
-	buyer.FindByBTCAddress()
+func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
+	// Check if transaction already exist.
+	_, found, err := transaction.FindByHash(txHash)
+	if found { return }
+
+	// Find buyer in db.
+	buyer, found, err := buyer.FindByBTCAddress(buyerAddr)
+	if err != nil {
+		uErr.Fatal(err, "failed to find buyer")
+	}
+	if !found { // TODO: Save data in db
+		uErr.LogError(nil, "failed to find user to send him tokens")
+		return
+	}
+
+
 
 }

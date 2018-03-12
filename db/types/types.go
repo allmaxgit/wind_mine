@@ -1,15 +1,17 @@
 package types
 
 type Buyer struct {
-	Id      int64
-	EthAddr string   `sql:"type:varchar(255),unique"`
-	BtcAddr string   `sql:"type:varchar(255),unique"`
+	Id           int
+	EthAddr      string   `sql:"type:varchar(100),unique"`
+	BtcAddr      string   `sql:"type:varchar(100),unique"`
+	Transactions []*Transaction
 }
 
 type Transaction struct {
-	Id     int64
-	UserId int64
-	From   string
-	Amount int64
-	Hash   string
+	Id     int
+	BuyerId int
+	Buyer   *Buyer
+	From   string `sql:"type:varchar(100),notnull"`
+	Amount float64
+	Hash   string `sql:"type:varchar(100),unique"`
 }
