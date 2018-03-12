@@ -17,7 +17,7 @@ type (
 		Hash    string `sql:"type:varchar(100),unique"`
 	}
 
-	NotHandledTransactions struct {
+	NotHandledTransaction struct {
 		Id     int
 		From   string `sql:"type:varchar(100),notnull"`
 		Amount float64
