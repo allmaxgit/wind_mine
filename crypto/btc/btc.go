@@ -12,6 +12,7 @@ import (
 	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
+	"WindToken/db/models/buyer"
 )
 
 // Dial starts connection with BTCService via tcp.
@@ -35,10 +36,33 @@ func Dial(conf *configs.Configs) (err error) {
 		switch err {
 		case nil:
 			fmt.Println("Message from server", string(message))
+			go handleMessage(message)
 		case io.EOF:
 			return uErr.Combine(nil, uErr.ErrorConnectBTCService)
 		default:
 			return err
 		}
 	}
+}
+
+func handleMessage(line []byte) {
+	var message types.BTCServiceResp
+
+	r := bytes.NewReader(line)
+	dec := gob.NewDecoder(r)
+	err := dec.Decode(&message)
+	if err != nil { return }
+
+	switch message.Type {
+	case messageTypes.VALUE_RECEIVED:
+		updateBuyerBalance(message.Value, message.From)
+	default:
+		return
+	}
+}
+
+func updateBuyerBalance(value float64, buyerAddr string) {
+	// TODO: Check transaction if exist
+	buyer.FindByBTCAddress()
+
 }

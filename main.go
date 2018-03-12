@@ -63,9 +63,10 @@ func main() {
 }
 
 func shutdown(fatal bool, r interface{}) {
-	log.Println("Shutdown")
 	if fatal {
 		os.Exit(1)
 	}
+
+	log.Println("Shutdown")
 	os.Exit(0)
 }

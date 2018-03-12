@@ -44,7 +44,7 @@ func main() {
 
 	// Connect to BTC Node.
 	fmt.Println("Connecting to node...")
-	btcWatcher, err := btc.StartRPCConnection()
+	btcWatcher, err := btc.StartRPCConnection(conf.Bitcoin)
 	if err != nil {
 		fmt.Println("ERROR - failed connect to node", err.Error())
 		os.Exit(1)
@@ -58,9 +58,14 @@ func main() {
 }
 
 func shutdown(fatal bool, r interface{}) {
-	log.Println("Shutdown")
 	if fatal {
+		err := store.Save()
+		if err != nil {
+			log.Println("FAILED TO SAVE STORE:", err)
+		}
 		os.Exit(1)
 	}
+
+	log.Println("Shutdown")
 	os.Exit(0)
 }

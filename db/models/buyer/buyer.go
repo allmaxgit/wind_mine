@@ -1,13 +1,13 @@
-package user
+package buyer
 
 import (
 	"WindToken/db"
 	"WindToken/db/types"
 )
 
-// FindUserByETH returns user by ethAddr.
-func FindUserByETH(ethAddr string) (*types.User, bool, error) {
-	var result types.User
+// FindByBTCAddress returns buyer by ethAddr.
+func FindByBTCAddress(ethAddr string) (*types.Buyer, bool, error) {
+	var result types.Buyer
 	err := db.Instance.Model(&result).
 		Where("eth_addr = ?", ethAddr).
 		Select()

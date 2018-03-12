@@ -33,13 +33,14 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 		}
 
 		if btcWatcher.OnNewValue == nil {
-			btcWatcher.OnNewValue = func(value float64, from string) {
+			btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
 				var message bytes.Buffer
 				enc := gob.NewEncoder(&message)
 				enc.Encode(types.BTCServiceResp{
 					Type: messageTypes.VALUE_RECEIVED,
 					Value: value,
 					From: from,
+					TXHash: txHash,
 				})
 
 				// TODO: Remove log
@@ -66,8 +67,9 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 			uErr.LogError(err, "filed to read message")
 		}
 
-		r := bytes.NewReader(line)
 		var message types.BTCServiceReq
+
+		r := bytes.NewReader(line)
 		dec := gob.NewDecoder(r)
 		err = dec.Decode(&message)
 		if err != nil {

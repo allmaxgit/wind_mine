@@ -6,7 +6,8 @@ type BTCServiceReq struct {
 }
 
 type BTCServiceResp struct {
-	Type  string
-	Value float64
-	From  string
+	Type   string
+	Value  float64
+	From   string
+	TXHash string
 }

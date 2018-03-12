@@ -1,5 +1,11 @@
 [common]
     logOutPath = "./out/out.log"
+    storePath = "./out/store"
 
 [server]
     tcpPort = 8082
+
+[bitcoin]
+    rpcHost = "162.213.252.104:8332"
+    user = "bitcoin"
+    password = "local321"

@@ -8,6 +8,7 @@ import (
 
 	uErr "WindToken/errors"
 	"WindToken/services/BTCService/store"
+	"WindToken/services/BTCService/configs"
 
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
@@ -19,7 +20,7 @@ type Watcher struct {
 
 	ActiveWatcherId  uint8
 
-	OnNewValue       func(float64, string)
+	OnNewValue       func(float64, string, string)
 }
 
 const (
@@ -28,11 +29,11 @@ const (
 )
 
 // StartRPCConnection starts connection to node.
-func StartRPCConnection() (watcher *Watcher, err error) {
+func StartRPCConnection(conf configs.Bitcoin) (watcher *Watcher, err error) {
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "162.213.252.104:8332",
-		User:         "bitcoin",
-		Pass:         "local321",
+		Host:         conf.RPCHost,
+		User:         conf.User,
+		Pass:         conf.Password,
 		HTTPPostMode: true,
 		DisableTLS:   true,
 	}
@@ -149,7 +150,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 						ownerOut := ownerTx.Vout[ownerTxOutIndex]
 						ownerAddr := ownerOut.ScriptPubKey.Addresses[0]
 						if w.OnNewValue != nil {
-							w.OnNewValue(vout.Value, ownerAddr)
+							w.OnNewValue(vout.Value, ownerAddr, tx.Hash)
 						}
 
 						log.Println("tx owner:", ownerAddr, "tx value", vout.Value)

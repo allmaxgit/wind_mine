@@ -5,17 +5,26 @@ import (
 )
 
 type Configs struct {
-	Common Common
-	Server Server
+	Common  Common
+	Server  Server
+	Bitcoin Bitcoin
 }
 
 type Common struct {
 	Dev         bool
 	LogsOutPath string
+	StorePath   string
+
 }
 
 type Server struct {
-	TCPPort   uint `toml:"tcpPort"`
+	TCPPort uint `toml:"tcpPort"`
+}
+
+type Bitcoin struct {
+	RPCHost  string `toml:"rpcHost"`
+	User     string
+	Password string
 }
 
 var configs Configs
@@ -30,5 +39,5 @@ func ParseConfigs(confPath string) (*Configs, error) {
 }
 
 // GetConfigs return configs.
-// You can get it from any place
-// func GetConfigs() *Configs { return &configs }
+// You can get it from any place.
+ func GetConfigs() *Configs { return &configs }
