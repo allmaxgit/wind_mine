@@ -27,7 +27,8 @@ type Crypto struct {
 	BTCAddr          string `toml:"btcAddress"`
 
 	// ETH
-	ETHProviderUrl   string `toml:"ethProviderUrl"`
+	ETHNetworkId     int `toml:"ethNetworkId"`
+	InfuraToken      string
 
 	// Contract
 	CrowdsaleAddress string

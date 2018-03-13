@@ -9,13 +9,14 @@ import (
 	"io"
 
 	uErr "WindToken/errors"
+	dbTypes "WindToken/db/types"
 	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/db"
-	dbTypes "WindToken/db/types"
 	"WindToken/db/models/transaction"
 	"WindToken/db/models/buyer"
+	"math/big"
 )
 
 // Dial starts connection with BTCService via tcp.
@@ -103,10 +104,12 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 		if err != nil {
 			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
 		}
+	} else {
+		// Convert value to tokens and send it to contract.
+		bValueFloat := new(big.Float)
+		bValueFloat.SetFloat64(value)
+		bValueInt := new(big.Int)
+		bValueFloat.Int(bValueInt)
+
 	}
-
-	// Send value to contract
-
-	// TODO: Send to contract
-
 }

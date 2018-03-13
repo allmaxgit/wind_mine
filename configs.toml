@@ -9,7 +9,14 @@
     btcAddress = "1NS4gbx1G2D5rc9PnvVsPys12nKxGiQg72" # Wallet address.
 
     # ETH
-    ethProviderUrl = "https://rinkeby.infura.io/1FXGefsSL6IqcH6Zj5Gc"
+    # Ethereum network id
+      # 1 - MAIN net
+      # 2 - ROPSTEN net
+      # 3 - RINKEBY net
+      # 4 - KOVAN net
+      # 5 - INFURANET net
+    ethNetworkId = 2
+    infuraToken = "1FXGefsSL6IqcH6Zj5Gc"
 
     # Contract
     crowdsaleAddress = ""

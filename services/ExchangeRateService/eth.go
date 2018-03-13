@@ -5,47 +5,22 @@ import (
 	"math"
 	"math/big"
 
+	"WindToken/utils"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"golang.org/x/net/context"
 )
 
-const (
-	//MAINNET Infura main network id
-	MAINNET = iota + 1
-	//ROPSTEN Infura Ropsten network id
-	ROPSTEN
-	//RINKEBY Infura Rinkeby network id
-	RINKEBY
-	//KOVAN Infura Kovan network id
-	KOVAN
-	//INFURANET Infuranet network id
-	INFURANET
-)
-
 func ConnectToEthereumNode(conf *Config) *ethclient.Client {
 	if conf == nil {
 		return nil
 	}
-	var infuraNode string
-	switch conf.NetworkId {
-	case MAINNET:
-		infuraNode = "https://mainnet.infura.io/"
-	case ROPSTEN:
-		infuraNode = "https://ropsten.infura.io/"
-	case RINKEBY:
-		infuraNode = "https://rinkeby.infura.io/"
-	case KOVAN:
-		infuraNode = "https://kovan.infura.io/"
-	case INFURANET:
-		infuraNode = "https://infuranet.infura.io/"
-	default:
-		infuraNode = "https://rinkeby.infura.io/"
-	}
-	infuraNode += conf.InfuraToken
 
-	client, err := ethclient.Dial(infuraNode)
+	providerURL := utils.GetInfuraProviderUrl(conf.NetworkId, conf.InfuraToken)
+
+	client, err := ethclient.Dial(providerURL)
 	if err != nil {
 		fmt.Println(err.Error())
 		return nil

@@ -32,7 +32,9 @@ var (
 
 // Dial connects to ETH provider create sessions for contracts.
 func Dial(conf configs.Crypto) (err error) {
-	client, _ = ethclient.Dial(conf.ETHProviderUrl)
+	providerURL := utils.GetInfuraProviderUrl(conf.ETHNetworkId, conf.InfuraToken)
+
+	client, _ = ethclient.Dial(providerURL)
 	if err != nil { return }
 
 	//gasPrice, err := client.SuggestGasPrice(context.TODO())
@@ -80,6 +82,8 @@ func UpdateGasLimit() (err error) {
 
 // GetTokenPrice determines token price in euro cents
 // depending on ICO period.
+//
+// How match euro cents in one token.
 func GetTokenPrice() (err error) {
 	state, err := session.CrowdsaleState()
 	if err != nil { return }
@@ -98,6 +102,12 @@ func GetTokenPrice() (err error) {
 	default:
 		return errors.New(uErr.UnknownError)
 	}
+	return
+}
+
+func getWeiInFiat() (weiInFiat *big.Int, err error) {
+	// How match wei in one euro cent.
+	weiInFiat, err = session.WeiInFiat()
 	return
 }
 
@@ -236,8 +246,3 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 
 	return
 }
-
-//func getWeiInFiat() (weiInFiat *big.Int, err error) {
-//	weiInFiat, err = session.WeiInFiat()
-//	return
-//}
