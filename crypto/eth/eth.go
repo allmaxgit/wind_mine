@@ -22,16 +22,16 @@ import (
 )
 
 var (
-	client    *ethclient.Client
+	client     *ethclient.Client
 
-	auth      *bind.TransactOpts
-	dAuth     *bind.TransactOpts
-	session   *token.CrowdsaleSession
-	euroCents *big.Int
+	auth       *bind.TransactOpts
+	dAuth      *bind.TransactOpts
+	session    *token.CrowdsaleSession
+	euroCents  *big.Int
 )
 
 // Dial connects to ETH provider create sessions for contracts.
-func Dial(conf configs.Crypto) (err error) {
+func Dial(conf *configs.Crypto) (err error) {
 	providerURL := utils.GetInfuraProviderUrl(conf.ETHNetworkId, conf.InfuraToken)
 
 	client, _ = ethclient.Dial(providerURL)
@@ -54,9 +54,8 @@ func Dial(conf configs.Crypto) (err error) {
 		return uErr.Combine(err, "failed to create Crowdsale session")
 	}
 
-	prepareContracts(conf.OwnerAddress)
-
-	return
+	err = prepareContracts(conf.OwnerAddress)
+	return uErr.Combine(err, "failed to prepare contracts")
 }
 
 // ManualReserve sends tokens on particular address.
@@ -85,8 +84,25 @@ func UpdateGasLimit() (err error) {
 //
 // How match euro cents in one token.
 func GetTokenPrice() (err error) {
+	fmt.Println("Getting token price...")
 	state, err := session.CrowdsaleState()
 	if err != nil { return }
+
+	if state == 0 {
+		tx, err := session.CheckState()
+		if err != nil { return err }
+
+		receipt, err := getReceipt(tx, false)
+
+		if receipt.Status == 0 {
+			return errors.New(uErr.ErrorReceiptStatus)
+		}
+	}
+
+	state, err = session.CrowdsaleState()
+	if err != nil {
+		return uErr.Combine(err, "failed get Crowdsale state in second time")
+	}
 
 	switch state {
 	case 0:

@@ -54,6 +54,7 @@ func main() {
 	fmt.Println("Launching TCP...")
 	if err := service.StartTCPServer(conf.Server.TCPPort, btcWatcher); err != nil {
 		fmt.Println("filed to start tcp server:", err.Error())
+		os.Exit(1)
 	}
 }
 

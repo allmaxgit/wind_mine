@@ -14,8 +14,9 @@ type (
 	}
 
 	RateServiceResp struct {
-		Currency string
-		Value    float64
+		Currency     string
+		Value        float64
+		FiatCurrency string
 	}
 )
 

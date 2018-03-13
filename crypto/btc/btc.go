@@ -10,7 +10,6 @@ import (
 
 	uErr "WindToken/errors"
 	dbTypes "WindToken/db/types"
-	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
 	"WindToken/db"
@@ -20,15 +19,15 @@ import (
 )
 
 // Dial starts connection with BTCService via tcp.
-func Dial(conf *configs.Configs) (err error) {
-	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", conf.Services.BTCServicePort))
+func Dial(port uint, walletAddress string) (err error) {
+	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
 	if err != nil { return }
 
 	var message bytes.Buffer
 	enc := gob.NewEncoder(&message)
 	enc.Encode(types.BTCServiceReq{
 		Type: messageTypes.WATCH_ADDRESS,
-		Address: conf.Crypto.BTCAddr,
+		Address: walletAddress,
 	})
 
 	response := bufio.NewReader(conn)

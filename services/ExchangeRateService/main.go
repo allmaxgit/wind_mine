@@ -26,6 +26,9 @@ func main() {
 	}
 	conf.EthConnection = conn
 
+	// Create watcher.
+	w := NewWatcher()
+
 	// Run rate updater.
 	go func() {
 		for {
@@ -37,7 +40,12 @@ func main() {
 				continue
 			}
 
-			conf.Logger.Println("Average ETH/"+conf.FiatSymbol+" exchange rate -", rate)
+			conf.Logger.Println("Average ETH/" + conf.FiatSymbol+" exchange rate -", rate)
+
+			if w.OnNewRate != nil {
+				w.OnNewRate("ETH", conf.FiatSymbol, rate)
+			}
+
 			last := GetWeiInFiatUnit(rate, 2)
 
 			for retries := 0; retries < conf.Retries; retries++ {
@@ -58,12 +66,10 @@ func main() {
 		}
 	}()
 
-	w := NewWatcher()
-
 	// Start TCP Server.
 	fmt.Println("Launching TCP...")
 	// TODO: Take port from configs
-	if err := StartTCPServer(9001, w); err != nil {
+	if err := StartTCPServer(8083, w); err != nil {
 		fmt.Println("filed to start tcp server:", err.Error())
 	}
 }

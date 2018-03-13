@@ -24,12 +24,13 @@ func StartTCPServer(port uint, w *Watcher) (err error) {
 		}
 
 		if w.OnNewRate == nil {
-			w.OnNewRate = func(currency string, value float64) {
+			w.OnNewRate = func(currency, fiatSymbol string, value float64) {
 				var message bytes.Buffer
 				enc := gob.NewEncoder(&message)
 				enc.Encode(types.RateServiceResp{
-					Currency: "currency",
-					Value: 326,
+					Currency: currency,
+					Value: value,
+					FiatCurrency: fiatSymbol,
 				})
 
 				_, err = conn.Write(append(message.Bytes(), '\n'))
