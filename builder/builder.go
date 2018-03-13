@@ -26,12 +26,15 @@ func main() {
 		return
 	}
 
-	// Run commands
+	Build()
+
+	fmt.Println("success")
+}
+
+func Build() {
 	buildPkg("")
 	buildPkg("./services/BTCService")
 	buildPkg("./services/ExchangeRateService")
-
-	fmt.Println("success")
 }
 
 func buildPkg(pkgPath string) {
