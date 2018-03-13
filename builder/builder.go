@@ -36,9 +36,11 @@ func main() {
 
 func buildPkg(pkgPath string) {
 	if pkgPath == "" {
+		fmt.Println("building root...")
 		runCommand("go", "build", "-o", mainPkgOutPath)
 	} else {
 		_, file := path.Split(pkgPath)
+		fmt.Printf("building %s...\n", file)
 		runCommand("go", "build", "-o", "./out/builds/" + file, pkgPath)
 	}
 }

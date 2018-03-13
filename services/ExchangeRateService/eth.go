@@ -64,8 +64,8 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	if conf == nil {
 		return nil
 	}
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
-	//defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
+	// defer cancel()
 	receipt, err := bind.WaitMined(context.Background(), conf.EthConnection, tx)
 	if err != nil {
 		conf.Logger.Println("WaitMined error: " + err.Error())
@@ -75,7 +75,7 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	return receipt
 }
 
-//GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process
+// GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process
 func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 	fiatUnitsInEther = round(fiatUnitsInEther, precision)
 
@@ -90,8 +90,8 @@ func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 	return weiInFiatUnit
 }
 
-//UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
-//and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed
+// UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
+// and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed
 func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 	if weiInFiatUnit == nil || c == nil {
 		return nil

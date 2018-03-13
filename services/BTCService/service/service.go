@@ -3,12 +3,10 @@ package service
 import (
 	"fmt"
 	"net"
-	"os"
 	"bufio"
 	"io"
 	"bytes"
 	"encoding/gob"
-	"log"
 
 	uErr "WindToken/errors"
 	"WindToken/types"
@@ -19,10 +17,7 @@ import (
 // StartTCPServer starts TCP listening on certain port.
 func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
+	if err != nil { return }
 	defer l.Close()
 
 	for {
@@ -43,12 +38,8 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 					TXHash: txHash,
 				})
 
-				// TODO: Remove log
-				log.Println("------------ amount", value, "from:", from)
-
 				_, err = conn.Write(append(message.Bytes(), '\n'))
 				if err != nil { uErr.Fatal(err, "failed to send response") }
-
 			}
 		}
 
