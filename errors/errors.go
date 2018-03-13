@@ -19,6 +19,10 @@ const (
 	ErrorReceiptStatus     = "receipt.Status is 0"
 	ErrorUpdateGasLimit    = "failed to update gas limit"
 	ErrorOwner             = "permission denied, please check ownerAddress and ownerPrivateKey"
+	ErrorICONotStarted     = "ico not started"
+	ErrorICOFinished       = "ico finished"
+
+	UnknownError           = "unknown error"
 )
 
 // LogError records error in log.

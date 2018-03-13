@@ -22,13 +22,15 @@ import (
 )
 
 var (
-	client             *ethclient.Client
+	client    *ethclient.Client
 
-	auth               *bind.TransactOpts
-	dAuth              *bind.TransactOpts
-	session            *token.CrowdsaleSession
+	auth      *bind.TransactOpts
+	dAuth     *bind.TransactOpts
+	session   *token.CrowdsaleSession
+	euroCents *big.Int
 )
 
+// Dial connects to ETH provider create sessions for contracts.
 func Dial(conf configs.Crypto) (err error) {
 	client, _ = ethclient.Dial(conf.ETHProviderUrl)
 	if err != nil { return }
@@ -52,6 +54,50 @@ func Dial(conf configs.Crypto) (err error) {
 
 	prepareContracts(conf.OwnerAddress)
 
+	return
+}
+
+// ManualReserve sends tokens on particular address.
+func ManualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err error) {
+	addr := common.HexToAddress(addrStr)
+
+	tx, err := session.ManualReserve(addr, amount)
+	if err != nil { return }
+
+	receipt, err = getReceipt(tx, true)
+	return
+}
+
+// UpdateGasLimit asks for new gas limit value
+// and sets it for TransactOpts.
+func UpdateGasLimit() (err error) {
+	gasLimit, err := getGasLimit()
+	if err != nil { return }
+
+	session.TransactOpts.GasLimit = gasLimit
+	return
+}
+
+// GetTokenPrice determines token price in euro cents
+// depending on ICO period.
+func GetTokenPrice() (err error) {
+	state, err := session.CrowdsaleState()
+	if err != nil { return }
+
+	switch state {
+	case 0:
+		return errors.New(uErr.ErrorICONotStarted)
+	case 1:
+		euroCents, err = session.PrivatePriceInFiatFracture()
+	case 2:
+		euroCents, err = session.PreIcoPriceInFiatFracture()
+	case 3:
+		euroCents, err = session.IcoPriceInFiatFracture()
+	case 4:
+		return errors.New(uErr.ErrorICOFinished)
+	default:
+		return errors.New(uErr.UnknownError)
+	}
 	return
 }
 
@@ -98,6 +144,10 @@ func prepareContracts(addrStr string) (err error) {
 	if addrStr != ownerAddress.Hex() {
 		return errors.New(uErr.ErrorOwner)
 	}
+
+	// Check if contract not started or finished.
+	err = GetTokenPrice()
+	if err != nil { return }
 
 	// Prepare contracts.
 	err = prepareCrowdsale()
@@ -152,14 +202,6 @@ func prepareCrowdsale() (err error) {
 	return
 }
 
-func UpdateGasLimit() (err error) {
-	gasLimit, err := getGasLimit()
-	if err != nil { return }
-
-	session.TransactOpts.GasLimit = gasLimit
-	return
-}
-
 func getGasLimit() (uint64, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -194,3 +236,8 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 
 	return
 }
+
+//func getWeiInFiat() (weiInFiat *big.Int, err error) {
+//	weiInFiat, err = session.WeiInFiat()
+//	return
+//}
