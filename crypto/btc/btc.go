@@ -12,6 +12,8 @@ import (
 	"WindToken/configs"
 	"WindToken/types"
 	"WindToken/constants/messageTypes"
+	"WindToken/db"
+	dbTypes "WindToken/db/types"
 	"WindToken/db/models/transaction"
 	"WindToken/db/models/buyer"
 )
@@ -72,11 +74,39 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 	if err != nil {
 		uErr.Fatal(err, "failed to find buyer")
 	}
+
+	// Save transaction in DB.
+	var ok bool
 	if !found { // TODO: Save data in db
-		uErr.LogError(nil, "failed to find user to send him tokens")
-		return
+		uErr.LogError(nil, "failed to find buyer")
+	} else {
+		err := db.Instance.Insert(&dbTypes.Transaction{
+			Buyer: buyer,
+			From: buyerAddr,
+			Amount: value,
+			Hash: txHash,
+		})
+		if err != nil {
+			uErr.LogError(err, "failed to insert Transaction")
+		} else {
+			ok = true
+		}
 	}
 
+	// Save transaction as not handled if something went wrong.
+	if !ok {
+		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
+			From: buyerAddr,
+			Amount: value,
+			Hash: txHash,
+		})
+		if err != nil {
+			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
+		}
+	}
 
+	// Send value to contract
+
+	// TODO: Send to contract
 
 }

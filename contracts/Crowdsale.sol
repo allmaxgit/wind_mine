@@ -340,7 +340,7 @@ contract Crowdsale is UsingFiatPrice {
             _sender.transfer(change);
         }
 
-        tokens = tokens.mul(10 ** token.decimals);
+        tokens = tokens.mul(10 ** token.decimals());
         token.transfer(_sender, tokens);
     }
 

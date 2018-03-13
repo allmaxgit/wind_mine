@@ -2,6 +2,7 @@ package configs
 
 import (
 	"github.com/BurntSushi/toml"
+	"math/big"
 )
 
 type Configs struct {
@@ -22,7 +23,18 @@ type Server struct {
 }
 
 type Crypto struct {
-	BTCAddr string `toml:"btcAddress"`
+	// BTC
+	BTCAddr          string `toml:"btcAddress"`
+
+	// ETH
+	ETHProviderUrl   string `toml:"ethProviderUrl"`
+
+	// Contract
+	CrowdsaleAddress string
+	OwnerPrivateKey  string
+	OwnerAddress     string
+	GasPrice         big.Int
+	GasLimit         uint64
 }
 
 type Services struct {
