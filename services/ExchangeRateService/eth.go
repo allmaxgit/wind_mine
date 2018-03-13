@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
+// ConnectToEthereumNode connects to ETH provider.
 func ConnectToEthereumNode(conf *Config) *ethclient.Client {
 	if conf == nil {
 		return nil
@@ -22,17 +23,19 @@ func ConnectToEthereumNode(conf *Config) *ethclient.Client {
 
 	client, err := ethclient.Dial(providerURL)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err.Error()) // FIXME
 		return nil
 	}
 
 	return client
 }
 
+// GetContractSession creates UsingFiatPrice session.
 func GetContractSession(conf *Config) *UsingFiatPriceSession {
 	if conf == nil {
 		return nil
 	}
+
 	contract, err := NewUsingFiatPrice(conf.Contract, conf.EthConnection)
 	if err != nil {
 		conf.Logger.Println("Failed to create session: " + err.Error())
@@ -52,9 +55,11 @@ func GetContractSession(conf *Config) *UsingFiatPriceSession {
 			Value:    conf.Transactor.Value,
 		},
 	}
+
 	return session
 }
 
+// GetReceipt waiting for transaction and returns result.
 func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	if conf == nil {
 		return nil
@@ -66,6 +71,7 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 		conf.Logger.Println("WaitMined error: " + err.Error())
 		return nil
 	}
+
 	return receipt
 }
 
@@ -122,6 +128,7 @@ func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 		return nil
 	}
 	conf.Logger.Println("Updated weiInFiat with value", fiatInWei.String())
+
 	return weiInFiatUnit
 }
 
@@ -142,5 +149,6 @@ func round(x float64, prec int) float64 {
 func roundBigFloat(x *big.Float, prec int) *big.Float {
 	fl, _ := x.Float64()
 	x.SetFloat64(round(fl, 2))
+
 	return x
 }
