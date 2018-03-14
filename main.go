@@ -62,7 +62,8 @@ func main() {
 
 	// Start connection with ExchangeRateService.
 	go func() {
-		err = crypto.Dial(8083)
+		fmt.Println("Rate service connection...")
+		err = crypto.Dial(9090)
 		if err != nil {
 			fmt.Println("ERROR - failed crypto Dial:", err.Error())
 			os.Exit(1)
@@ -70,7 +71,7 @@ func main() {
 	}()
 
 	// Start connection with BTCService.
-	fmt.Println("Start btc service connection...")
+	fmt.Println("BTC service connection...")
 	// TODO: Rename BTCAddr to BTCTrackedAddress
 	if err = btc.Dial(conf.Services.BTCServicePort, conf.Crypto.BTCAddr); err != nil {
 		if err.Error() == uErr.ErrorConnectBTCService {

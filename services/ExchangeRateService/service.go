@@ -23,6 +23,8 @@ func StartTCPServer(port uint, w *Watcher) (err error) {
 			continue
 		}
 
+		fmt.Println("Connection___________") // TODO: Remove
+
 		if w.OnNewRate == nil {
 			w.OnNewRate = func(currency, fiatSymbol string, value float64) {
 				var message bytes.Buffer
@@ -34,7 +36,9 @@ func StartTCPServer(port uint, w *Watcher) (err error) {
 				})
 
 				_, err = conn.Write(append(message.Bytes(), '\n'))
-				if err != nil { uErr.Fatal(err, "failed to send response") }
+				if err != nil {
+					uErr.LogError(err, "failed to send response")
+				}
 			}
 		}
 	}

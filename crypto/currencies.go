@@ -34,10 +34,9 @@ func Dial(port uint) (err error) {
 		message, err := response.ReadBytes(byte('\n'))
 		switch err {
 		case nil:
-			fmt.Println("Message from ExchangeRateService", string(message))
 			go handleMessage(message)
 		case io.EOF:
-			return uErr.Combine(nil, uErr.ErrorConnectBTCService)
+			return uErr.Combine(nil, uErr.ErrorConnectRateService)
 		default:
 			return err
 		}

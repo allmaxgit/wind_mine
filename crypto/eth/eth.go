@@ -55,7 +55,11 @@ func Dial(conf *configs.Crypto) (err error) {
 	}
 
 	err = prepareContracts(conf.OwnerAddress)
-	return uErr.Combine(err, "failed to prepare contracts")
+	if err != nil {
+		return uErr.Combine(err, "failed to prepare contracts")
+	}
+
+	return
 }
 
 // ManualReserve sends tokens on particular address.
@@ -190,12 +194,9 @@ func prepareCrowdsale() (err error) {
 	if privateSaleHardCap.BitLen() == 0 {
 
 		err := utils.DoNTimeBeforeComplete(10, func (i int) (err error) {
-
 			fmt.Println("PrepareCrowdsale GasPrice:", session.TransactOpts.GasPrice) // TODO: Remove
-			tx, err := session.PrepareCrowdsale()
-			if err != nil { return }
 
-			receipt, err := getReceipt(tx, true)
+			_, err = prepareCrowdsaleSync()
 			if err != nil {
 				if err.Error() == core.ErrGasLimit.Error() {
 					err = UpdateGasLimit()
@@ -211,10 +212,6 @@ func prepareCrowdsale() (err error) {
 				return
 			}
 
-			if receipt.Status == 0 {
-				return errors.New(uErr.ErrorReceiptStatus)
-			}
-
 			return
 		})
 
@@ -225,7 +222,7 @@ func prepareCrowdsale() (err error) {
 	}
 
 	fmt.Println("Crowdsale preparation was completed")
-	return
+	return nil
 }
 
 func getGasLimit() (uint64, error) {
@@ -258,6 +255,22 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 		return nil, errors.New(uErr.ErrorTXTimedOut)
 	} else if err != nil {
 		return nil, err
+	}
+
+	return
+}
+
+func prepareCrowdsaleSync() (receipt *types.Receipt, err error) {
+	tx, err := session.PrepareCrowdsale()
+	if err != nil { return }
+
+	log.Println("tx:", tx.Hash())
+
+	receipt, err = getReceipt(tx, true)
+	if err != nil { return }
+
+	if receipt.Status == 0 {
+		return nil, errors.New(uErr.ErrorReceiptStatus)
 	}
 
 	return

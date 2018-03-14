@@ -12,6 +12,7 @@ import (
 
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"fmt"
 )
 
 type Watcher struct {
@@ -97,6 +98,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 		bCount, err := w.client.GetBlockCount()
 		if err != nil { return err }
 		log.Println("blocks count:", bCount)
+		log.Println("last handled block:", lastHandledBlock)
 
 		// If lastHandledBlock backward in time.
 		backwardInTime := false
@@ -104,12 +106,13 @@ func (w *Watcher) WatchAddress(addr string) error {
 			bCount = lastHandledBlock + 1
 			backwardInTime = true
 		} else if bCount == lastHandledBlock {
+			sleep()
 			continue
 		}
 
 		lastHash, err := w.client.GetBlockHash(bCount)
 		if err != nil { return err }
-		log.Println("last block", lastHash)
+		//log.Println("last block", lastHash)
 
 		lastBlock, err := w.client.GetBlockVerbose(lastHash)
 		if err != nil { return err }
@@ -128,7 +131,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 			// Filter addresses.
 			for _, vout := range tx.Vout {
 				for _, fAddr := range vout.ScriptPubKey.Addresses {
-					log.Println("Address:", fAddr)
+					//log.Println("Address:", fAddr)
 					if fAddr == addr { // TODO: Remove redundant logs
 						log.Println("------------------")
 						log.Println("Transaction for", addr)
@@ -161,13 +164,18 @@ func (w *Watcher) WatchAddress(addr string) error {
 
 		// Save last handled block.
 		store.Set(LAST_BLOCK_KEY, bCount)
-		lastHandledBlock++
+		lastHandledBlock = bCount
 
 		// Sleep for 1 minute.
 		if !backwardInTime {
-			time.Sleep(1 * time.Minute)
+			sleep()
 		}
 	}
 
 	return nil
+}
+
+func sleep() {
+	fmt.Println("sleeping for 2 minutes...")
+	time.Sleep(2 * time.Minute)
 }

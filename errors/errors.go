@@ -8,21 +8,22 @@ import (
 
 // TODO: Replace Error -> Err
 const (
-	ErrorSelectFromDBShort = "code 1"
+	ErrorSelectFromDBShort  = "code 1"
 
-	ErrorSelectFromDB      = "failed to select from db"
-	ErrorUpdateCache       = "failed to update cache"
-	ErrorFindAddress       = "address not found"
-	ErrorConnectBTCService = "btc service shutdown"
+	ErrorSelectFromDB       = "failed to select from db"
+	ErrorUpdateCache        = "failed to update cache"
+	ErrorFindAddress        = "address not found"
+	ErrorConnectBTCService  = "btc service shutdown"
+	ErrorConnectRateService = "rate service shutdown"
 
-	ErrorTXTimedOut        = "transaction timed out"
-	ErrorReceiptStatus     = "receipt.Status is 0"
-	ErrorUpdateGasLimit    = "failed to update gas limit"
-	ErrorOwner             = "permission denied, please check ownerAddress and ownerPrivateKey"
-	ErrorICONotStarted     = "ico not started"
-	ErrorICOFinished       = "ico finished"
+	ErrorTXTimedOut         = "transaction timed out"
+	ErrorReceiptStatus      = "receipt.Status is 0"
+	ErrorUpdateGasLimit     = "failed to update gas limit"
+	ErrorOwner              = "permission denied, please check ownerAddress and ownerPrivateKey"
+	ErrorICONotStarted      = "ico not started"
+	ErrorICOFinished        = "ico finished"
 
-	UnknownError           = "unknown error"
+	UnknownError            = "unknown error"
 )
 
 // LogError records error in log.

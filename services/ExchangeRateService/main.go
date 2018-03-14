@@ -69,7 +69,7 @@ func main() {
 	// Start TCP Server.
 	fmt.Println("Launching TCP...")
 	// TODO: Take port from configs
-	if err := StartTCPServer(8083, w); err != nil {
+	if err := StartTCPServer(9090, w); err != nil {
 		fmt.Println("filed to start tcp server:", err.Error())
 	}
 }

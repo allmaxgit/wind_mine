@@ -19,10 +19,10 @@
     infuraToken = "1FXGefsSL6IqcH6Zj5Gc"
 
     # Contract
-    crowdsaleAddress = "0x9ee9c4afe696e51535428c64f1b18231a1d63443"
+    crowdsaleAddress = "0x459270bbE4884233306122b23D1e754C72cEc54e"
     ownerPrivateKey = "093afb31f3bff9edb790580c27a81040dce8a1fef0053a61f30313cd53686dad"
     ownerAddress = "0xcD628372B2429b8E079C235Ee6843F03f298041E" # Important! Must be associated with ownerPrivateKey.
-    gasPrice = 5000000000 # Wei.
+    gasPrice = 3000000000 # Wei.
     gasLimit = 4700000
 
 [services]
