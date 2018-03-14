@@ -1,7 +1,7 @@
 package main
 
 type Watcher struct {
-	OnNewRate func(string, string, float64)
+	OnNewRate func(uint8, string, float64)
 }
 
 func NewWatcher() *Watcher {

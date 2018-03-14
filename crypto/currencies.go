@@ -10,6 +10,7 @@ import (
 
 	uErr "WindToken/errors"
 	"WindToken/types"
+	"WindToken/constants"
 	"sync"
 )
 
@@ -59,10 +60,10 @@ func handleMessage(line []byte) {
 
 	rates.mux.Lock()
 	switch message.Currency {
-	case "ETH":
+	case constants.ETH:
 		rates.ETH = message.Value
 		fmt.Println("ETH rate updated:", message.Value)
-	case "BTC":
+	case constants.BTC:
 		rates.BTC = message.Value
 		fmt.Println("BTC rate updated:", message.Value)
 	default:

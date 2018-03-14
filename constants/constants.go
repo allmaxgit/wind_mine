@@ -12,3 +12,8 @@ const (
 	//INFURANET Infuranet network id
 	INFURANET
 )
+
+const (
+	BTC = iota
+	ETH
+)

@@ -14,7 +14,7 @@ type (
 	}
 
 	RateServiceResp struct {
-		Currency     string
+		Currency     uint8
 		Value        float64
 		FiatCurrency string
 	}

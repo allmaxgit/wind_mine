@@ -26,7 +26,7 @@ func StartTCPServer(port uint, w *Watcher) (err error) {
 		fmt.Println("Connection___________") // TODO: Remove
 
 		if w.OnNewRate == nil {
-			w.OnNewRate = func(currency, fiatSymbol string, value float64) {
+			w.OnNewRate = func(currency uint8, fiatSymbol string, value float64) {
 				var message bytes.Buffer
 				enc := gob.NewEncoder(&message)
 				enc.Encode(types.RateServiceResp{
