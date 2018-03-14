@@ -15,7 +15,8 @@ import (
 	"WindToken/db"
 	"WindToken/db/models/transaction"
 	"WindToken/db/models/buyer"
-	"math/big"
+	"WindToken/crypto"
+	"WindToken/crypto/eth"
 )
 
 // Dial starts connection with BTCService via tcp.
@@ -65,6 +66,9 @@ func handleMessage(line []byte) {
 }
 
 func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
+	// Waiting for rates.
+	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {}
+
 	// Check if transaction already exist.
 	_, found, err := transaction.FindByHash(txHash)
 	if found { return }
@@ -104,11 +108,19 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
 		}
 	} else {
-		// Convert value to tokens and send it to contract.
-		bValueFloat := new(big.Float)
-		bValueFloat.SetFloat64(value)
-		bValueInt := new(big.Int)
-		bValueFloat.Int(bValueInt)
+		// Update ICO state info.
+		err := eth.GetTokenPrice()
+		if err != nil {
+			uErr.Fatal(err, "failed to get token price while updating buyer balance")
+		}
 
+		// Convert BTC to tokens.
+		tokensValue := eth.ConvertBTCToTokens(value)
+
+		// Send tokens to buyer ETH address.
+		err = eth.SendTokens(buyer.EthAddr, tokensValue)
+		if err != nil {
+			uErr.Fatal(err,"failed to send tokens while updating buyer balance")
+		}
 	}
 }

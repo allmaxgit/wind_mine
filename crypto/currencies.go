@@ -71,3 +71,14 @@ func handleMessage(line []byte) {
 	}
 	rates.mux.Unlock()
 }
+
+// TODO: Might to use mutex here.
+// GetETHRate returns current ETH rate.
+func GetETHRate() float64 {
+	return rates.ETH
+}
+
+// GetBTCRate returns current BTC rate.
+func GetBTCRate() float64 {
+	return rates.BTC
+}

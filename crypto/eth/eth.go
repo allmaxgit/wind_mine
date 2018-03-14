@@ -8,6 +8,7 @@ import (
 	"time"
 
 	uErr "WindToken/errors"
+	uCrypto "WindToken/crypto"
 	"WindToken/gocontracts"
 	"WindToken/configs"
 	"WindToken/utils"
@@ -59,17 +60,6 @@ func Dial(conf *configs.Crypto) (err error) {
 		return uErr.Combine(err, "failed to prepare contracts")
 	}
 
-	return
-}
-
-// ManualReserve sends tokens on particular address.
-func ManualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err error) {
-	addr := common.HexToAddress(addrStr)
-
-	tx, err := session.ManualReserve(addr, amount)
-	if err != nil { return }
-
-	receipt, err = getReceipt(tx, true)
 	return
 }
 
@@ -125,9 +115,54 @@ func GetTokenPrice() (err error) {
 	return
 }
 
-func getWeiInFiat() (weiInFiat *big.Int, err error) {
-	// How match wei in one euro cent.
-	weiInFiat, err = session.WeiInFiat()
+// ConvertBTCToTokens converts BTC to ICO tokens.
+func ConvertBTCToTokens(btcValue float64) (tokens *big.Int) {
+	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100)
+	inEuroCents.Int(tokens)
+	tokens.Quo(tokens, euroCents)
+
+	return
+}
+
+// SendTokens sends tokens to ETH address.
+func SendTokens(addr string, amount *big.Int) error {
+	err := utils.DoNTimeBeforeComplete(10, func(i int) (err error) {
+		_, err = manualReserve(addr, amount)
+		if err != nil {
+			if err.Error() == core.ErrGasLimit.Error() {
+				err = UpdateGasLimit()
+				if err != nil {
+					return uErr.Combine(err, uErr.ErrorUpdateGasLimit)
+				}
+				return uErr.Combine(nil, "gas limit was updated")
+			} else if err.Error() == core.ErrReplaceUnderpriced.Error() || err.Error() == uErr.ErrorTXTimedOut {
+				utils.IncreaseGasPrice(session.TransactOpts.GasPrice)
+				return uErr.Combine(nil, "gas price was updated")
+			}
+
+			return
+		}
+
+		return
+	})
+
+	return err
+}
+
+// ManualReserve sends tokens on particular address.
+func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err error) {
+	addr := common.HexToAddress(addrStr)
+
+	tx, err := session.ManualReserve(addr, amount)
+	if err != nil { return }
+
+	receipt, err = getReceipt(tx, true)
+	if err != nil { return }
+
+	if receipt.Status == 0 {
+		return nil, errors.New(uErr.ErrorReceiptStatus)
+	}
+
 	return
 }
 

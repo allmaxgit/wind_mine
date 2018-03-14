@@ -42,3 +42,6 @@ _vendor-*
 node_modules
 cmd/
 out/builds/
+WindToken
+services/BTCService/BTCService
+services/ExchangeRateService/ExchangeRateService
