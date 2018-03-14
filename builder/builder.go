@@ -6,10 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path"
-	"strings"
 )
 
-var mainPkgOutPath = "./out/builds/WindToken"
+var mainPkgName = "WindToken"
 
 func main() {
 	pwd, err := os.Getwd()
@@ -18,8 +17,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	path := strings.Split(pwd, "/")
-	rootDir := path[len(path)-1]
+	_, rootDir := path.Split(pwd)
 
 	if rootDir != "WindToken" {
 		log.Fatalln("please run it from 'WindToken' dir")
@@ -33,18 +31,34 @@ func main() {
 
 func Build() {
 	buildPkg("")
-	buildPkg("./services/BTCService")
-	buildPkg("./services/ExchangeRateService")
+	buildPkg("services", "BTCService")
+	buildPkg("services", "ExchangeRateService")
 }
 
-func buildPkg(pkgPath string) {
+func buildPkg(pathToPkg ...string) {
+	pkgPath := path.Join(pathToPkg...)
+
 	if pkgPath == "" {
+		mkPath(mainPkgName)
+
 		fmt.Println("building root...")
-		runCommand("go", "build", "-o", mainPkgOutPath)
+		runCommand("go", "build", "-o", path.Join("out", "builds", mainPkgName, mainPkgName))
 	} else {
+		pkgPath = "." + string(os.PathSeparator) + pkgPath
+		fmt.Println(pkgPath)
+
 		_, file := path.Split(pkgPath)
+		mkPath(file)
+
 		fmt.Printf("building %s...\n", file)
-		runCommand("go", "build", "-o", "./out/builds/" + file, pkgPath)
+		runCommand("go", "build", "-o", path.Join("out", "builds", file, file), pkgPath)
+	}
+}
+
+func mkPath(outDirName string) {
+	err := os.MkdirAll(path.Join("out", "builds", outDirName), os.ModePerm)
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
