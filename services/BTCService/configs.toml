@@ -6,6 +6,6 @@
     tcpPort = 8082
 
 [bitcoin]
-    rpcHost = "162.213.252.104:8332"
+    rpcHost = "89.111.20.200:8332"
     user = "bitcoin"
     password = "local321"

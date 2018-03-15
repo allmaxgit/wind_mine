@@ -6,7 +6,7 @@
 
 [crypto]
     # BTC
-    btcAddress = "1NS4gbx1G2D5rc9PnvVsPys12nKxGiQg72" # Wallet address.
+    btcAddress = "n2mspPYhrcYAQAmy3Ud2fGCUynqJMUAKGD" # Wallet address.
 
     # ETH
     # Ethereum network id

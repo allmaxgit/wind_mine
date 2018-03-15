@@ -27,20 +27,18 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			continue
 		}
 
-		if btcWatcher.OnNewValue == nil {
-			btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
-				var message bytes.Buffer
-				enc := gob.NewEncoder(&message)
-				enc.Encode(types.BTCServiceResp{
-					Type: messageTypes.VALUE_RECEIVED,
-					Value: value,
-					From: from,
-					TXHash: txHash,
-				})
+		btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
+			var message bytes.Buffer
+			enc := gob.NewEncoder(&message)
+			enc.Encode(types.BTCServiceResp{
+				Type: messageTypes.VALUE_RECEIVED,
+				Value: value,
+				From: from,
+				TXHash: txHash,
+			})
 
-				_, err = conn.Write(append(message.Bytes(), '\n'))
-				if err != nil { uErr.Fatal(err, "failed to send response") }
-			}
+			_, err = conn.Write(append(message.Bytes(), '\n'))
+			if err != nil { uErr.Fatal(err, "failed to send response") }
 		}
 
 		go handleConnection(conn,  btcWatcher)
@@ -78,7 +76,5 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 		//	uErr.LogError(err, "filed to handle message with type:", message.Type)
 		//	continue
 		//}
-
-		fmt.Println(message, line)
 	}
 }

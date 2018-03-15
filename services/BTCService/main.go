@@ -21,15 +21,15 @@ func main() {
 	defer utils.RecoverWatcher(shutdown)
 	go utils.ShutdownWatcher(shutdown)
 
-	// Initiate store.
-	store.InitiateStore()
-
 	// Parse configs.
 	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
 		fmt.Println("ERROR - failed to parse configs:", err.Error())
 		os.Exit(1)
 	}
+
+	// Initiate store.
+	store.InitiateStore(conf.Common.StorePath)
 
 	// Setup prod env.
 	if *prod {
@@ -60,11 +60,12 @@ func main() {
 
 func shutdown(fatal bool, r interface{}) {
 	if fatal {
-		err := store.Save()
-		if err != nil {
-			log.Println("FAILED TO SAVE STORE:", err)
-		}
 		os.Exit(1)
+	}
+
+	err := store.Save()
+	if err != nil {
+		log.Println("FAILED TO SAVE STORE:", err)
 	}
 
 	log.Println("Shutdown")

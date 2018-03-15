@@ -56,11 +56,11 @@ func Dial(conf *configs.Crypto) (err error) {
 	}
 
 	err = prepareContracts(conf.OwnerAddress)
-	if err != nil {
+	if err != nil && err.Error() != uErr.ErrorICOFinished {
 		return uErr.Combine(err, "failed to prepare contracts")
 	}
 
-	return
+	return nil
 }
 
 // UpdateGasLimit asks for new gas limit value
@@ -116,12 +116,13 @@ func GetTokenPrice() (err error) {
 }
 
 // ConvertBTCToTokens converts BTC to ICO tokens.
-func ConvertBTCToTokens(btcValue float64) (tokens *big.Int) {
+func ConvertBTCToTokens(btcValue float64) (*big.Int) {
+	tokens := new(big.Int)
 	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100)
 	inEuroCents.Int(tokens)
 	tokens.Quo(tokens, euroCents)
 
-	return
+	return tokens
 }
 
 // SendTokens sends tokens to ETH address.

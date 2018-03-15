@@ -71,6 +71,7 @@ func (w *Watcher) CheckActiveWatcherIdChanged(ownerId uint8) bool {
 
 // StartWatchingAddress handles error from WatchAddress.
 func (w *Watcher) StartWatchingAddress(addr string) {
+	log.Println("Start watching address " + addr + "...")
 	err := w.WatchAddress(addr)
 	if err != nil {
 		uErr.Fatal(err, "failed to watch address")

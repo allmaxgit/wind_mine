@@ -17,6 +17,7 @@ import (
 	"WindToken/db/models/buyer"
 	"WindToken/crypto"
 	"WindToken/crypto/eth"
+	"log"
 )
 
 // Dial starts connection with BTCService via tcp.
@@ -36,11 +37,10 @@ func Dial(port uint, walletAddress string) (err error) {
 	if err != nil { return }
 
 	for {
-		message, err := response.ReadBytes(byte('\n'))
+		line, err := response.ReadBytes(byte('\n'))
 		switch err {
 		case nil:
-			fmt.Println("Message from server", string(message))
-			go handleMessage(message)
+			go handleMessage(line)
 		case io.EOF:
 			return uErr.Combine(nil, uErr.ErrorConnectBTCService)
 		default:
@@ -66,6 +66,7 @@ func handleMessage(line []byte) {
 }
 
 func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
+	log.Println("Updateting buyer balance...")
 	// Waiting for rates.
 	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {}
 
@@ -110,7 +111,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 	} else {
 		// Update ICO state info.
 		err := eth.GetTokenPrice()
-		if err != nil {
+		if err != nil && err.Error() != uErr.ErrorICOFinished {
 			uErr.Fatal(err, "failed to get token price while updating buyer balance")
 		}
 
