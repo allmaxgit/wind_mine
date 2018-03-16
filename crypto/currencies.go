@@ -37,7 +37,7 @@ func Dial(port uint) (err error) {
 		case nil:
 			go handleMessage(message)
 		case io.EOF:
-			return uErr.Combine(nil, uErr.ErrorConnectRateService)
+			return uErr.Combine(nil, uErr.ErrConnectRateService)
 		default:
 			return err
 		}

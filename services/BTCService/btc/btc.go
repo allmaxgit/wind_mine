@@ -81,7 +81,7 @@ func (w *Watcher) StartWatchingAddress(addr string) {
 // WatchAddress adds listener for address.
 func (w *Watcher) WatchAddress(addr string) error {
 	if addr == "" {
-		return errors.New(uErr.ErrorFindAddress)
+		return errors.New(uErr.ErrFindAddress)
 	}
 
 	var lastHandledBlock int64

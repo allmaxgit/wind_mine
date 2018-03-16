@@ -3,15 +3,17 @@ package buyer
 import (
 	"errors"
 	"strings"
+	"log"
 
 	uErr "WindToken/errors"
 	buyerGW "WindToken/api/buyer"
 	"WindToken/configs"
+	"WindToken/db/models/buyer"
 
+	"golang.org/x/net/context"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
-	"golang.org/x/net/context"
 )
 
 type RPC struct {}
@@ -23,17 +25,17 @@ func (r *RPC) GetBTCWallet(ctx context.Context, in *buyerGW.GetBTCWalletReq) (*b
 
 	// Validate ETH address.
 	if ethAddrStr == "" {
-		return nil, errors.New(uErr.ErrorValidateETHAddress)
+		return nil, errors.New(uErr.ErrValidateETHAddress)
 	}
 	if !common.IsHexAddress(ethAddrStr) {
-		return nil, errors.New(uErr.ErrorValidateETHAddress)
+		return nil, errors.New(uErr.ErrValidateETHAddress)
 	}
 	if common.EmptyHash(common.HexToHash(ethAddrStr)) {
-		return nil, errors.New(uErr.ErrorValidateETHAddress)
+		return nil, errors.New(uErr.ErrValidateETHAddress)
 	}
 	ethAddr := common.HexToAddress(ethAddrStr)
 	if strings.ToLower(ethAddrStr) != strings.ToLower(ethAddr.Hex()) {
-		return nil, errors.New(uErr.ErrorValidateETHAddress)
+		return nil, errors.New(uErr.ErrValidateETHAddress)
 	}
 
 	// Define net configs.
@@ -45,15 +47,29 @@ func (r *RPC) GetBTCWallet(ctx context.Context, in *buyerGW.GetBTCWalletReq) (*b
 
 	// Validate BTC address.
 	if btcAddrStr == "" {
-		return nil, errors.New(uErr.ErrorValidateBTCAddress)
+		return nil, errors.New(uErr.ErrValidateBTCAddress)
 	}
 	_, err := btcutil.DecodeAddress(btcAddrStr, chainConf)
 	if err != nil {
-		uErr.LogError(err, uErr.ErrorValidateBTCAddress)
-		return nil, errors.New(uErr.ErrorValidateBTCAddress)
+		return nil, errors.New(uErr.ErrValidateBTCAddress)
 	}
 
+	// Check if buyer exist.
+	_, found, err := buyer.FindByBTCAddress(btcAddrStr)
+	if err != nil {
+		log.Println(uErr.ErrSelectFromDB)
+		return nil, uErr.CombineErrCode(uErr.ErrSelectFromDBCode)
+	}
 
+	// Create new buyer if doesn't exist.
+	if !found {
+		err = buyer.New(ethAddrStr, btcAddrStr)
+		if err != nil {
+			log.Println(uErr.ErrInsertToDB)
+			return nil, uErr.CombineErrCode(uErr.ErrInsertToDBCode)
+		}
+	}
 
-	return nil, nil
+	walletAddr := configs.GetConfigs().Crypto.BTCAddr
+	return &buyerGW.GetBTCWalletResp{BtcAddress: walletAddr}, nil
 }

@@ -19,7 +19,7 @@ type Common struct {
 }
 
 type Server struct {
-	GRPCPort uint `toml:"tcpPort"`
+	GRPCPort uint `toml:"gRPCPort"`
 	RESTPort uint `toml:"restPort"`
 }
 

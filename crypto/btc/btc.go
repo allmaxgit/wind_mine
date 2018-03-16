@@ -42,7 +42,7 @@ func Dial(port uint, walletAddress string) (err error) {
 		case nil:
 			go handleMessage(line)
 		case io.EOF:
-			return uErr.Combine(nil, uErr.ErrorConnectBTCService)
+			return uErr.Combine(nil, uErr.ErrConnectBTCService)
 		default:
 			return err
 		}
@@ -111,7 +111,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 	} else {
 		// Update ICO state info.
 		err := eth.GetTokenPrice()
-		if err != nil && err.Error() != uErr.ErrorICOFinished {
+		if err != nil && err.Error() != uErr.ErrICOFinished {
 			uErr.Fatal(err, "failed to get token price while updating buyer balance")
 		}
 

@@ -5,6 +5,19 @@ import (
 	"WindToken/db/types"
 )
 
+// New adds new buyer.
+func New(ethAddr, btcAddr string) (err error) {
+	var transactions []*types.Transaction
+
+	err = db.Instance.Insert(&types.Buyer{
+		EthAddr: ethAddr,
+		BtcAddr: btcAddr,
+		Transactions: transactions,
+	})
+
+	return
+}
+
 // FindByBTCAddress returns buyer by ethAddr.
 func FindByBTCAddress(btcAddr string) (*types.Buyer, bool, error) {
 	var result types.Buyer

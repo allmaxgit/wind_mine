@@ -6,31 +6,34 @@ import (
 	"errors"
 )
 
-// Error periods.
+// Error codes.
 const (
-	ErrStart   = iota
-	ErrRunning
+	ErrInsertToDBCode   = iota + 1
+	ErrSelectFromDBCode
 )
 
 // TODO: Replace Error -> Err
+// Error messages.
 const (
-	ErrorFindAddress        = "address not found"
-	ErrorConnectBTCService  = "btc service shutdown"
-	ErrorConnectRateService = "rate service shutdown"
+	ErrSelectFromDB       = "failed to select from DB"
+	ErrInsertToDB         = "failed to insert to DB"
+	ErrFindAddress        = "address not found"
+	ErrConnectBTCService  = "btc service shutdown"
+	ErrConnectRateService = "rate service shutdown"
 
 	// API
-	ErrorValidateBTCAddress = "BTC address is not valid"
-	ErrorValidateETHAddress = "ETH address is not valid"
+	ErrValidateBTCAddress = "BTC address is not valid"
+	ErrValidateETHAddress = "ETH address is not valid"
 
 
-	ErrorTXTimedOut         = "transaction timed out"
-	ErrorReceiptStatus      = "receipt.Status is 0"
-	ErrorUpdateGasLimit     = "failed to update gas limit"
-	ErrorOwner              = "permission denied, please check ownerAddress and ownerPrivateKey"
-	ErrorICONotStarted      = "ico not started"
-	ErrorICOFinished        = "ico finished"
+	ErrTXTimedOut         = "transaction timed out"
+	ErrReceiptStatus      = "receipt.Status is 0"
+	ErrUpdateGasLimit     = "failed to update gas limit"
+	ErrOwner              = "permission denied, please check ownerAddress and ownerPrivateKey"
+	ErrICONotStarted      = "ico not started"
+	ErrICOFinished        = "ico finished"
 
-	UnknownError            = "unknown error"
+	ErrUnknown            = "unknown error"
 )
 
 // LogError records error in log.
@@ -52,6 +55,11 @@ func Fatal(err error, description ...interface{}) {
 // Combine creates and returns error with description.
 func Combine(err error, description ...interface{}) error {
 	return errors.New(fmt.Sprintf("%s: %s", fmt.Sprint(description...), getErrStr(err)))
+}
+
+// ErrCode
+func CombineErrCode(errCode int) (error) {
+	return errors.New(fmt.Sprintf("code %d", errCode))
 }
 
 func getErrStr(err error) (errStr string) {

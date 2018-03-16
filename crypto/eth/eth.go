@@ -56,7 +56,7 @@ func Dial(conf *configs.Crypto) (err error) {
 	}
 
 	err = prepareContracts(conf.OwnerAddress)
-	if err != nil && err.Error() != uErr.ErrorICOFinished {
+	if err != nil && err.Error() != uErr.ErrICOFinished {
 		return uErr.Combine(err, "failed to prepare contracts")
 	}
 
@@ -89,7 +89,7 @@ func GetTokenPrice() (err error) {
 		receipt, err := getReceipt(tx, false)
 
 		if receipt.Status == 0 {
-			return errors.New(uErr.ErrorReceiptStatus)
+			return errors.New(uErr.ErrReceiptStatus)
 		}
 	}
 
@@ -100,7 +100,7 @@ func GetTokenPrice() (err error) {
 
 	switch state {
 	case 0:
-		return errors.New(uErr.ErrorICONotStarted)
+		return errors.New(uErr.ErrICONotStarted)
 	case 1:
 		euroCents, err = session.PrivatePriceInFiatFracture()
 	case 2:
@@ -108,9 +108,9 @@ func GetTokenPrice() (err error) {
 	case 3:
 		euroCents, err = session.IcoPriceInFiatFracture()
 	case 4:
-		return errors.New(uErr.ErrorICOFinished)
+		return errors.New(uErr.ErrICOFinished)
 	default:
-		return errors.New(uErr.UnknownError)
+		return errors.New(uErr.ErrUnknown)
 	}
 	return
 }
@@ -133,10 +133,10 @@ func SendTokens(addr string, amount *big.Int) error {
 			if err.Error() == core.ErrGasLimit.Error() {
 				err = UpdateGasLimit()
 				if err != nil {
-					return uErr.Combine(err, uErr.ErrorUpdateGasLimit)
+					return uErr.Combine(err, uErr.ErrUpdateGasLimit)
 				}
 				return uErr.Combine(nil, "gas limit was updated")
-			} else if err.Error() == core.ErrReplaceUnderpriced.Error() || err.Error() == uErr.ErrorTXTimedOut {
+			} else if err.Error() == core.ErrReplaceUnderpriced.Error() || err.Error() == uErr.ErrTXTimedOut {
 				utils.IncreaseGasPrice(session.TransactOpts.GasPrice)
 				return uErr.Combine(nil, "gas price was updated")
 			}
@@ -161,7 +161,7 @@ func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err
 	if err != nil { return }
 
 	if receipt.Status == 0 {
-		return nil, errors.New(uErr.ErrorReceiptStatus)
+		return nil, errors.New(uErr.ErrReceiptStatus)
 	}
 
 	return
@@ -208,7 +208,7 @@ func prepareContracts(addrStr string) (err error) {
 	if err != nil { return }
 
 	if addrStr != ownerAddress.Hex() {
-		return errors.New(uErr.ErrorOwner)
+		return errors.New(uErr.ErrOwner)
 	}
 
 	// Check if contract not started or finished.
@@ -237,10 +237,10 @@ func prepareCrowdsale() (err error) {
 				if err.Error() == core.ErrGasLimit.Error() {
 					err = UpdateGasLimit()
 					if err != nil {
-						return uErr.Combine(err, uErr.ErrorUpdateGasLimit)
+						return uErr.Combine(err, uErr.ErrUpdateGasLimit)
 					}
 					return uErr.Combine(nil, "gas limit was updated")
-				} else if err.Error() == core.ErrReplaceUnderpriced.Error() || err.Error() == uErr.ErrorTXTimedOut {
+				} else if err.Error() == core.ErrReplaceUnderpriced.Error() || err.Error() == uErr.ErrTXTimedOut {
 					utils.IncreaseGasPrice(session.TransactOpts.GasPrice)
 					return uErr.Combine(nil, "gas price was updated")
 				}
@@ -288,7 +288,7 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 
 	receipt, err = bind.WaitMined(ctx, client, tx)
 	if ctx.Err() != nil && err == ctx.Err() {
-		return nil, errors.New(uErr.ErrorTXTimedOut)
+		return nil, errors.New(uErr.ErrTXTimedOut)
 	} else if err != nil {
 		return nil, err
 	}
@@ -306,7 +306,7 @@ func prepareCrowdsaleSync() (receipt *types.Receipt, err error) {
 	if err != nil { return }
 
 	if receipt.Status == 0 {
-		return nil, errors.New(uErr.ErrorReceiptStatus)
+		return nil, errors.New(uErr.ErrReceiptStatus)
 	}
 
 	return
