@@ -19,12 +19,14 @@ type Common struct {
 }
 
 type Server struct {
-	TCPPort uint `toml:"tcpPort"`
+	GRPCPort uint `toml:"tcpPort"`
+	RESTPort uint `toml:"restPort"`
 }
 
 type Crypto struct {
 	// BTC
 	BTCAddr          string `toml:"btcAddress"`
+	BTCTestnet       bool   `toml:"btcTestnet"`
 
 	// ETH
 	ETHNetworkId     int `toml:"ethNetworkId"`
@@ -61,6 +63,6 @@ func ParseConfigs(confPath string) (*Configs, error) {
 	return &configs, nil
 }
 
-// GetConfigs return configs.
-// You can get it from any place
-// func GetConfigs() *Configs { return &configs }
+ //GetConfigs return configs.
+ //You can get it from any place
+ func GetConfigs() *Configs { return &configs }

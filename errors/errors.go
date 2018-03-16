@@ -6,15 +6,22 @@ import (
 	"errors"
 )
 
+// Error periods.
+const (
+	ErrStart   = iota
+	ErrRunning
+)
+
 // TODO: Replace Error -> Err
 const (
-	ErrorSelectFromDBShort  = "code 1"
-
-	ErrorSelectFromDB       = "failed to select from db"
-	ErrorUpdateCache        = "failed to update cache"
 	ErrorFindAddress        = "address not found"
 	ErrorConnectBTCService  = "btc service shutdown"
 	ErrorConnectRateService = "rate service shutdown"
+
+	// API
+	ErrorValidateBTCAddress = "BTC address is not valid"
+	ErrorValidateETHAddress = "ETH address is not valid"
+
 
 	ErrorTXTimedOut         = "transaction timed out"
 	ErrorReceiptStatus      = "receipt.Status is 0"
@@ -35,6 +42,12 @@ func LogError(err error, description ...interface{}) {
 func Fatal(err error, description ...interface{}) {
 	panic(fmt.Sprint(fmt.Sprint(description...), " : ", getErrStr(err)))
 }
+
+//// PrintError prints error.
+//func PrintFatal(err error, description ...interface{}) {
+//	fmt.Println("ERROR -", fmt.Sprint(description...), ":", getErrStr(err))
+//	os.Exit(1)
+//}
 
 // Combine creates and returns error with description.
 func Combine(err error, description ...interface{}) error {

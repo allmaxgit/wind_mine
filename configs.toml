@@ -2,11 +2,13 @@
     logOutPath = "./out/out.log"
 
 [server]
-    tcpPort = 8080
+    gRPCPort = 9092
+    restPort = 9091
 
 [crypto]
     # BTC
     btcAddress = "n2mspPYhrcYAQAmy3Ud2fGCUynqJMUAKGD" # Wallet address.
+    btcTestnet = true
 
     # ETH
     # Ethereum network id

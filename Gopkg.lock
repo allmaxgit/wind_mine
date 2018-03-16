@@ -148,6 +148,13 @@
   revision = "553a641470496b2327abcac10b36396bd98e45c9"
 
 [[projects]]
+  name = "github.com/gorilla/handlers"
+  packages = ["."]
+  revision = "90663712d74cb411cbef281bc1e08c19d1a76145"
+  source = "github.com/gorilla/handlers"
+  version = "v1.3.0"
+
+[[projects]]
   name = "github.com/grpc-ecosystem/grpc-gateway"
   packages = [
     "runtime",
@@ -418,6 +425,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d503b9a1377a78a4348e0f951476d2adc30860ca0217478948be095f9e91f942"
+  inputs-digest = "74652a1bed4be4d54da426a5ec16914cb7ae11aac7137a736654bce82b352b74"
   solver-name = "gps-cdcl"
   solver-version = 1

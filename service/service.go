@@ -1,31 +1,56 @@
 package service
 
 import (
-	"log"
 	"net"
 	"fmt"
+	"os"
+	"net/http"
+
+	buyerGW "WindToken/api/buyer"
+	"WindToken/controllers/buyer"
+
+	"golang.org/x/net/context"
 	"google.golang.org/grpc"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
+	"github.com/gorilla/handlers"
 )
 
-// StartGRPCServer starts gRPC server for rest wrapper.
-func (srv *Server) StartGRPCServer(gRPCPort uint) {
-
+// StartGRPCServer starts gRPC server for REST wrapper.
+func StartGRPCServer(gRPCPort uint) (err error) {
 	s := grpc.NewServer()
-	auth_gw.RegisterAuthServer(
+	buyerGW.RegisterAuthServer(
 		s,
-		&action.Rpc{},
+		&buyer.RPC{},
 	)
-
-	//bro := BrokerSrv()
-	//go BrokerSrvStart(bro)
 
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", gRPCPort))
 	if err != nil {
-		uErr.Fatal(err, "failed to listen")
+		return
 	}
 
-	log.Println(fmt.Sprintf("gRPC - Start listening on port: %d", gRPCPort))
-	if err := s.Serve(lis); err != nil {
-		uErr.Fatal(err, "failed to serve")
+	// Start listening.
+	err = s.Serve(lis)
+	return
+}
+
+// StartRESTGetaway starts REST wrapper for gRPC.
+func StartRESTGetaway(RESTPort, gRPCPort uint) (err error) {
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	mux := runtime.NewServeMux()
+	opts := []grpc.DialOption{grpc.WithInsecure()}
+
+	err = buyerGW.RegisterAuthHandlerFromEndpoint(ctx, mux, fmt.Sprintf(":%d", gRPCPort), opts)
+	if err != nil {
+		return
 	}
+
+	methods := handlers.AllowedMethods([]string{"POST"})
+	hCORS := handlers.CORS(methods)(mux)
+
+	// Start listening.
+	err = http.ListenAndServe(fmt.Sprintf(":%d", RESTPort), handlers.LoggingHandler(os.Stdout, hCORS))
+	return
 }

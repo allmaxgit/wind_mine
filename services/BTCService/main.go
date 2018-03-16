@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 
+	uErr "WindToken/errors"
 	"WindToken/utils"
 	"WindToken/services/BTCService/configs"
 	"WindToken/services/BTCService/service"
@@ -24,8 +25,7 @@ func main() {
 	// Parse configs.
 	conf, err := configs.ParseConfigs("./configs.toml")
 	if err != nil {
-		fmt.Println("ERROR - failed to parse configs:", err.Error())
-		os.Exit(1)
+		uErr.Fatal(err, "failed to parse configs")
 	}
 
 	// Initiate store.
@@ -37,8 +37,7 @@ func main() {
 
 		err := utils.SetupLogFile("logPath")
 		if err != nil {
-			fmt.Println("ERROR - failed to setup log file:", err.Error())
-			os.Exit(1)
+			uErr.Fatal(err, "failed to setup log file")
 		}
 	}
 
@@ -46,15 +45,13 @@ func main() {
 	fmt.Println("Connecting to node...")
 	btcWatcher, err := btc.StartRPCConnection(conf.Bitcoin)
 	if err != nil {
-		fmt.Println("ERROR - failed connect to node", err.Error())
-		os.Exit(1)
+		uErr.Fatal(err, "failed connect to node")
 	}
 
 	// Start TCP Server.
 	fmt.Println("Launching TCP...")
 	if err := service.StartTCPServer(conf.Server.TCPPort, btcWatcher); err != nil {
-		fmt.Println("filed to start tcp server:", err.Error())
-		os.Exit(1)
+		uErr.Fatal(err, "filed to start tcp server")
 	}
 }
 

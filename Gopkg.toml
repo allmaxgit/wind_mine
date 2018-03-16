@@ -49,6 +49,10 @@
   name = "github.com/btcsuite/btcd"
   source = "github.com/btcsuite/btcd"
 
+[[constraint]]
+  name = "github.com/gorilla/handlers"
+  source = "github.com/gorilla/handlers"
+
 [prune]
   go-tests = true
   unused-packages = true
