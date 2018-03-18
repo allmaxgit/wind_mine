@@ -38,7 +38,6 @@ func Build() {
 
 func buildPkg(confPath string, pathToPkg ...string) {
 	pkgPath := path.Join(pathToPkg...)
-	//confPath = "." + string(os.PathSeparator) + confPath
 	_, confFileName := path.Split(confPath)
 
 	if pkgPath == "" {
@@ -49,8 +48,7 @@ func buildPkg(confPath string, pathToPkg ...string) {
 
 		err := Copy(confPath,  path.Join("out", "builds", mainPkgName, confFileName))
 		if err != nil {
-			fmt.Printf("failed to copy config file (%s/%s): %s", mainPkgName, confFileName, err.Error())
-			os.Exit(1)
+			log.Fatalf("failed to copy config file (%s/%s): %s", mainPkgName, confFileName, err)
 		}
 	} else {
 		pkgPath = "." + string(os.PathSeparator) + pkgPath
@@ -64,8 +62,7 @@ func buildPkg(confPath string, pathToPkg ...string) {
 
 		err := Copy(confPath,  path.Join("out", "builds", file, confFileName))
 		if err != nil {
-			fmt.Printf("failed to copy config file (%s/%s): %s", file, confFileName, err.Error())
-			os.Exit(1)
+			log.Fatalf("failed to copy config file (%s/%s): %s", file, confFileName, err)
 		}
 	}
 }
@@ -73,15 +70,17 @@ func buildPkg(confPath string, pathToPkg ...string) {
 func mkPath(outDirName string) {
 	err := os.MkdirAll(path.Join("out", "builds", outDirName), os.ModePerm)
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalln(err)
 	}
 }
 
 func runCommand(cmd string, args ...string) {
-	if err := exec.Command(cmd, args...).Run(); err != nil {
-		log.Fatalln("failed to exec command", err)
+	if output, err := exec.Command(cmd, args...).Output(); err != nil {
+		os.Stdout.Write(output)
+		os.Exit(1)
 	}
 }
+
 
 // Copy the src file to dst. Any existing file will be overwritten and will not
 // copy file attributes.
