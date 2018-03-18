@@ -31,19 +31,27 @@ func main() {
 }
 
 func Build() {
-	buildPkg("")
-	buildPkg("services", "BTCService")
-	buildPkg("services", "ExchangeRateService")
+	buildPkg("configs.toml", "")
+	buildPkg(path.Join("services", "BTCService", "configs.toml"), "services", "BTCService")
+	buildPkg(path.Join("services", "ExchangeRateService", "rate-conf.yaml"), "services", "ExchangeRateService")
 }
 
-func buildPkg(pathToPkg ...string) {
+func buildPkg(confPath string, pathToPkg ...string) {
 	pkgPath := path.Join(pathToPkg...)
+	//confPath = "." + string(os.PathSeparator) + confPath
+	_, confFileName := path.Split(confPath)
 
 	if pkgPath == "" {
 		mkPath(mainPkgName)
 
 		fmt.Println("building root...")
 		runCommand("go", "build", "-o", path.Join("out", "builds", mainPkgName, mainPkgName))
+
+		err := Copy(confPath,  path.Join("out", "builds", mainPkgName, confFileName))
+		if err != nil {
+			fmt.Printf("failed to copy config file (%s/%s): %s", mainPkgName, confFileName, err.Error())
+			os.Exit(1)
+		}
 	} else {
 		pkgPath = "." + string(os.PathSeparator) + pkgPath
 		fmt.Println(pkgPath)
@@ -53,6 +61,12 @@ func buildPkg(pathToPkg ...string) {
 
 		fmt.Printf("building %s...\n", file)
 		runCommand("go", "build", "-o", path.Join("out", "builds", file, file), pkgPath)
+
+		err := Copy(confPath,  path.Join("out", "builds", file, confFileName))
+		if err != nil {
+			fmt.Printf("failed to copy config file (%s/%s): %s", file, confFileName, err.Error())
+			os.Exit(1)
+		}
 	}
 }
 
