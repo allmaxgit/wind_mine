@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path"
-	"io"
+
+	"WindToken/helpers/utils"
 )
 
 var mainPkgName = "WindToken"
@@ -25,15 +25,17 @@ func main() {
 		return
 	}
 
-	Build()
+	build()
 
-	fmt.Println("success")
+	fmt.Println("build success")
 }
 
-func Build() {
+func build() {
+	// TODO: Use main pkg name here.
 	buildPkg("configs.toml", "")
 	buildPkg(path.Join("services", "BTCService", "configs.toml"), "services", "BTCService")
 	buildPkg(path.Join("services", "ExchangeRateService", "rate-conf.yaml"), "services", "ExchangeRateService")
+	buildConsul()
 }
 
 func buildPkg(confPath string, pathToPkg ...string) {
@@ -41,12 +43,13 @@ func buildPkg(confPath string, pathToPkg ...string) {
 	_, confFileName := path.Split(confPath)
 
 	if pkgPath == "" {
-		mkPath(mainPkgName)
+		// TODO: Remove it.
+		utils.MakePath(mainPkgName)
 
 		fmt.Println("building root...")
-		runCommand("go", "build", "-o", path.Join("out", "builds", mainPkgName, mainPkgName))
+		utils.RunCommand("go", "build", "-o", path.Join("out", "builds", mainPkgName, mainPkgName))
 
-		err := Copy(confPath,  path.Join("out", "builds", mainPkgName, confFileName))
+		err := utils.CopyFile(confPath,  path.Join("out", "builds", mainPkgName, confFileName))
 		if err != nil {
 			log.Fatalf("failed to copy config file (%s/%s): %s", mainPkgName, confFileName, err)
 		}
@@ -55,52 +58,19 @@ func buildPkg(confPath string, pathToPkg ...string) {
 		fmt.Println(pkgPath)
 
 		_, file := path.Split(pkgPath)
-		mkPath(file)
+		utils.MakePath(file)
 
 		fmt.Printf("building %s...\n", file)
-		runCommand("go", "build", "-o", path.Join("out", "builds", file, file), pkgPath)
+		utils.RunCommand("go", "build", "-o", path.Join("out", "builds", file, file), pkgPath)
 
-		err := Copy(confPath,  path.Join("out", "builds", file, confFileName))
+		err := utils.CopyFile(confPath,  path.Join("out", "builds", file, confFileName))
 		if err != nil {
 			log.Fatalf("failed to copy config file (%s/%s): %s", file, confFileName, err)
 		}
 	}
 }
 
-func mkPath(outDirName string) {
-	err := os.MkdirAll(path.Join("out", "builds", outDirName), os.ModePerm)
-	if err != nil {
-		log.Fatalln(err)
-	}
-}
-
-func runCommand(cmd string, args ...string) {
-	if output, err := exec.Command(cmd, args...).Output(); err != nil {
-		os.Stdout.Write(output)
-		os.Exit(1)
-	}
-}
-
-
-// Copy the src file to dst. Any existing file will be overwritten and will not
-// copy file attributes.
-func Copy(src, dst string) error {
-	in, err := os.Open(src)
-	if err != nil {
-		return err
-	}
-	defer in.Close()
-
-	out, err := os.Create(dst)
-	if err != nil {
-		return err
-	}
-	defer out.Close()
-
-	_, err = io.Copy(out, in)
-	if err != nil {
-		return err
-	}
-
-	return nil
+func buildConsul() {
+	consulPath := "." + string(os.PathSeparator) + path.Join("helpers", "consul")
+	utils.RunCommand("go", "build", "-o", path.Join("out", "builds", "consul"), consulPath)
 }
