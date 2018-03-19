@@ -14,6 +14,7 @@ import (
 	"WindToken/constants/messageTypes"
 	"WindToken/db"
 	"WindToken/db/models/transaction"
+	"WindToken/db/models/notHandledTransaction"
 	"WindToken/db/models/buyer"
 	"WindToken/crypto"
 	"WindToken/crypto/eth"
@@ -72,7 +73,15 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 
 	// Check if transaction already exist.
 	_, found, err := transaction.FindByHash(txHash)
+	if err != nil {
+		uErr.Fatal(err, "failed to find transaction")
+	}
 	if found { return }
+
+	_, notHandledFound, err := notHandledTransaction.FindByHash(txHash)
+	if err != nil {
+		uErr.Fatal(err, "failed to find not handled transaction!")
+	}
 
 	// Find buyer in db.
 	buyer, found, err := buyer.FindByBTCAddress(buyerAddr)
@@ -99,7 +108,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 	}
 
 	// Save transaction as not handled if something went wrong.
-	if !ok {
+	if !ok && !notHandledFound {
 		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
 			From: buyerAddr,
 			Amount: value,
@@ -108,7 +117,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 		if err != nil {
 			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
 		}
-	} else {
+	} else if ok {
 		// Update ICO state info.
 		err := eth.GetTokenPrice()
 		if err != nil && err.Error() != uErr.ErrICOFinished {

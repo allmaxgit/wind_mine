@@ -33,7 +33,11 @@ func Initiate(conf configs.DB) (err error) {
 }
 
 func createSchema() error {
-	for _, model := range []interface{}{&types.Buyer{}, &types.Transaction{}} {
+	for _, model := range []interface{}{
+		&types.Buyer{},
+		&types.Transaction{},
+		&types.NotHandledTransaction{},
+	} {
 		err := Instance.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists: true,
 		})

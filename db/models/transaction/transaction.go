@@ -6,8 +6,8 @@ import (
 )
 
 // FindByHash returns transaction with particular hash.
-func FindByHash(hash string) (*types.Buyer, bool, error) {
-	var result types.Buyer
+func FindByHash(hash string) (*types.Transaction, bool, error) {
+	var result types.Transaction
 	err := db.Instance.Model(&result).
 		Where("hash = ?", hash).
 		Select()
