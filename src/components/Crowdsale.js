@@ -53,6 +53,10 @@ class Crowdsale extends Component {
             reserveReceiver: '',
             reserveAmount: '',
 
+            fiatSymbol: '',
+            fiatDecimals: '',
+            weiInFiat: '',
+            lastUpdated: '',
         };
 
         this.changeValue = this.changeValue.bind(this);
@@ -88,6 +92,10 @@ class Crowdsale extends Component {
             weiRaised,
             wallet,
             crowdsaleState,
+            fiatSymbol,
+            fiatDecimals,
+            weiInFiat,
+            lastUpdated,
         ] = await Promise.all([
             instanceCrowdsale.owner.call(),
             instanceCrowdsale.token.call(),
@@ -109,6 +117,10 @@ class Crowdsale extends Component {
             instanceCrowdsale.weiRaised.call(),
             instanceCrowdsale.wallet.call(),
             instanceCrowdsale.crowdsaleState.call(),
+            instanceCrowdsale.fiatSymbol.call(),
+            instanceCrowdsale.fiatDecimals.call(),
+            instanceCrowdsale.weiInFiat.call(),
+            instanceCrowdsale.lastUpdated.call(),
         ]);
 
 
@@ -146,6 +158,10 @@ class Crowdsale extends Component {
             weiRaised,
             wallet,
             crowdsaleState,
+            fiatSymbol,
+            fiatDecimals,
+            weiInFiat,
+            lastUpdated,
         });
     }
 
@@ -273,8 +289,8 @@ class Crowdsale extends Component {
             privateSale, preIco, ico,
             generalHardCap, currentHardCap, tokensSold,
             newWallet, newPrivateParticipant, newStartDate,
-            reserveReceiver, reserveAmount
-
+            reserveReceiver, reserveAmount,
+            fiatSymbol, fiatDecimals, weiInFiat, lastUpdated,
         } = this.state;
         return (
             <Row style={{ marginTop: 50 }}>
@@ -289,6 +305,8 @@ class Crowdsale extends Component {
                     <Row>Current Hard Cap: {(currentHardCap / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
                     <Row>Tokens Sold: {(tokensSold / this.props.divider).toLocaleString(undefined, { maximumFractionDigits: this.props.decimals })} WMD</Row>
                     <Row>Wei Raised: {weiRaised.toString()}</Row>
+                    <Row>{fiatSymbol.toString()} Price: {(weiInFiat / Math.pow(10, fiatDecimals)).toLocaleString(undefined, { maximumFractionDigits: fiatDecimals })} ETH</Row>
+                    <Row>Last Updated: {moment.unix(lastUpdated).format(dateFormat)}</Row>
                     <hr className="my-2" />
                     <Row>
                         <Col>
@@ -422,6 +440,11 @@ Crowdsale.propTypes = {
         setNewStartDate: PropTypes.func.isRequired,
         manualReserve: PropTypes.func.isRequired,
         withdraw: PropTypes.func.isRequired,
+
+        fiatSymbol: PropTypes.func.isRequired,
+        fiatDecimals: PropTypes.func.isRequired,
+        weiInFiat: PropTypes.func.isRequired,
+        lastUpdated: PropTypes.func.isRequired,
 
     }).isRequired,
     divider: PropTypes.number.isRequired,
