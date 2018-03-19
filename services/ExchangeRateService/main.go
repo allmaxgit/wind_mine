@@ -5,7 +5,6 @@ package main
 import (
 	"log"
 	"math"
-	"math/big"
 	"os"
 	"time"
 	"fmt"

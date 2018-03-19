@@ -23,7 +23,7 @@ func StartGRPCServer(gRPCPort uint) (err error) {
 		&buyer.RPC{},
 	)
 
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", gRPCPort))
+	lis, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", gRPCPort))
 	if err != nil {
 		return
 	}
