@@ -75,7 +75,7 @@ func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	return receipt
 }
 
-// GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process
+// GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process.
 func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 	fiatUnitsInEther = round(fiatUnitsInEther, precision)
 
@@ -91,7 +91,7 @@ func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 }
 
 // UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
-// and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed
+// and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed.
 func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 	if weiInFiatUnit == nil || c == nil {
 		return nil

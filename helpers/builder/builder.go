@@ -35,6 +35,7 @@ func build() {
 	buildPkg("configs.toml", "")
 	buildPkg(path.Join("services", "BTCService", "configs.toml"), "services", "BTCService")
 	buildPkg(path.Join("services", "ExchangeRateService", "rate-conf.yaml"), "services", "ExchangeRateService")
+	// TODO: Copy out dir.
 	buildConsul()
 }
 

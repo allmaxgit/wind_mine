@@ -53,7 +53,7 @@ func Save() (err error) {
 
 	//fmt.Println("cache items:", items)
 
-	f, err := os.OpenFile(conf.Common.StorePath, os.O_WRONLY, os.ModeAppend)
+	f, err := os.OpenFile(conf.Common.StorePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil {
 		fmt.Println("ERROR OPEN FILE:", err.Error())
 		return
@@ -70,7 +70,7 @@ func getFromFile(storePath string) (map[string]cache.Item, error) {
 	var items map[string]cache.Item
 
 	fmt.Println("Getting cache from file:", storePath)
-	f, err := os.OpenFile(storePath, os.O_RDONLY, os.ModePerm)
+	f, err := os.OpenFile(storePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
 	if err != nil { return items, err }
 	defer f.Close()
 

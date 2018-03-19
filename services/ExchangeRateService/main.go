@@ -13,8 +13,6 @@ import (
 	"WindToken/constants"
 )
 
-var lastWeiInFiatUnit *big.Int
-
 func main() {
 	conf := GetConfig()
 	if conf == nil {
@@ -62,16 +60,7 @@ func watchETHRate(conf *Config, w *Watcher) {
 		last := GetWeiInFiatUnit(rate, 2)
 
 		for retries := 0; retries < conf.Retries; retries++ {
-			if lastWeiInFiatUnit != nil && last.Cmp(lastWeiInFiatUnit) == 0 {
-				conf.Logger.Println("Exchange rate has not changed, skipping")
-				break
-			}
-			last = UpdateExchangeRate(last, conf)
-			if last != nil {
-				lastWeiInFiatUnit = last
-				conf.Logger.Println("Exchange rate is successfully updated")
-				break
-			}
+			UpdateExchangeRate(last, conf)
 		}
 
 		conf.Logger.Println("Sleeping for", int64(conf.UpdateRate), "minutes..")
