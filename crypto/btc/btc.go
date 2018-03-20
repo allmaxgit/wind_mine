@@ -19,6 +19,7 @@ import (
 	"WindToken/crypto"
 	"WindToken/crypto/eth"
 	"log"
+	"time"
 )
 
 // Dial starts connection with BTCService via tcp.
@@ -67,9 +68,11 @@ func handleMessage(line []byte) {
 }
 
 func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
-	log.Println("Updateting buyer balance...")
+	log.Println("Start updateting buyer balance...")
 	// Waiting for rates.
-	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {}
+	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {
+		time.Sleep(5 * time.Second)
+	}
 
 	// Check if transaction already exist.
 	_, found, err := transaction.FindByHash(txHash)
@@ -96,6 +99,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 	} else {
 		err := db.Instance.Insert(&dbTypes.Transaction{
 			Buyer: buyer,
+			BuyerId: buyer.Id,
 			From: buyerAddr,
 			Amount: value,
 			Hash: txHash,
@@ -128,8 +132,10 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) {
 		tokensValue := eth.ConvertBTCToTokens(value)
 
 		// Send tokens to buyer ETH address.
+		log.Println("Send tokens to buyer:", tokensValue.String())
 		err = eth.SendTokens(buyer.EthAddr, tokensValue)
 		if err != nil {
+			// TODO: Save in not handled transactions.
 			uErr.Fatal(err,"failed to send tokens while updating buyer balance")
 		}
 	}

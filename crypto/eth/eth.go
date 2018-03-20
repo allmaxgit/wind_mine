@@ -128,6 +128,7 @@ func ConvertBTCToTokens(btcValue float64) (*big.Int) {
 // SendTokens sends tokens to ETH address.
 func SendTokens(addr string, amount *big.Int) error {
 	err := utils.DoNTimeBeforeComplete(10, func(i int) (err error) {
+		log.Println("session.TransactOpts.GasPrice:", session.TransactOpts.GasPrice)
 		_, err = manualReserve(addr, amount)
 		if err != nil {
 			if err.Error() == core.ErrGasLimit.Error() {
@@ -141,7 +142,7 @@ func SendTokens(addr string, amount *big.Int) error {
 				return uErr.Combine(nil, "gas price was updated")
 			}
 
-			return
+			return err
 		}
 
 		return
@@ -156,6 +157,8 @@ func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err
 
 	tx, err := session.ManualReserve(addr, amount)
 	if err != nil { return }
+
+	log.Println("manualReserve tx:", tx.Hash().Hex())
 
 	receipt, err = getReceipt(tx, true)
 	if err != nil { return }

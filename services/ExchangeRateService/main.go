@@ -52,6 +52,8 @@ func watchETHRate(conf *Config, w *Watcher) {
 
 		conf.Logger.Println("Average ETH/" + conf.FiatSymbol + " exchange rate -", rate)
 
+		SetRate(constants.ETH, rate)
+
 		if w.OnNewRate != nil {
 			w.OnNewRate(constants.ETH, conf.FiatSymbol, rate)
 		}
@@ -78,6 +80,8 @@ func watchBTCRate(conf *Config, w *Watcher) {
 		}
 
 		conf.Logger.Println("Average BTC/" + conf.FiatSymbol + " exchange rate -", rate)
+
+		SetRate(constants.BTC, rate)
 
 		if w.OnNewRate != nil {
 			w.OnNewRate(constants.BTC, conf.FiatSymbol, rate)

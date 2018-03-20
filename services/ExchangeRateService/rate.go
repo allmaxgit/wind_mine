@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"WindToken/constants"
+	"sync"
 )
 
 //ExchangeRateProvider describes service, which provides API for getting cryptocurrency to fiat currency exchange rate
@@ -36,7 +37,16 @@ type CryptonatorResponse struct {
 	Error     string            `json:"error"`
 }
 
+type Rates struct {
+	mux *sync.Mutex
+
+	ETH float64
+	BTC float64
+}
+
 var (
+	currentRates = Rates{&sync.Mutex{}, 0, 0}
+
 	RateProviders = [3]*ExchangeRateProvider{{
 		"CryptoCompare",
 		"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=",
@@ -90,6 +100,26 @@ func GetAverageRate(forCurrency uint8, symbol string, c *Config) float64 {
 
 	return sum / validCount
 }
+
+func SetRate(forCurrency uint8, rate float64) {
+	currentRates.mux.Lock()
+	defer currentRates.mux.Unlock()
+
+	if forCurrency == constants.ETH {
+		currentRates.ETH = rate
+	} else {
+		currentRates.BTC = rate
+	}
+}
+
+func GetETHRate() float64 {
+	return currentRates.ETH
+}
+
+func GetBTCRate() float64 {
+	return currentRates.BTC
+}
+
 
 //GetCryptoCompareRate performs GET request to CryptoCompare and returns ETH/symbol exchange rate
 func GetCryptoCompareRate(forCurrency uint8, symbol string, conf *Config) float64 {

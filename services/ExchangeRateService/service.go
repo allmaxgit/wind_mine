@@ -8,6 +8,7 @@ import (
 
 	uErr "WindToken/errors"
 	"WindToken/types"
+	"WindToken/constants"
 )
 
 // StartTCPServer starts TCP listening on certain port.
@@ -38,6 +39,15 @@ func StartTCPServer(conf *Config, port uint, w *Watcher) (err error) {
 			if err != nil {
 				uErr.LogError(err, "failed to send response")
 			}
+		}
+
+		ethRate := GetETHRate()
+		btcRate := GetBTCRate()
+		if ethRate != 0 {
+			w.OnNewRate(constants.ETH, conf.FiatSymbol, ethRate)
+		}
+		if btcRate != 0 {
+			w.OnNewRate(constants.BTC, conf.FiatSymbol, btcRate)
 		}
 
 	}
