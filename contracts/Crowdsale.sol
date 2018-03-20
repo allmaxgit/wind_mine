@@ -1,4 +1,4 @@
-pragma solidity ^0.4.18;
+pragma solidity 0.4.21;
 
 import './SafeMath.sol';
 import './Ownable.sol';
@@ -238,7 +238,7 @@ contract Crowdsale is UsingFiatPrice {
     function setWallet(address _newWallet) public onlyOwner {
         checkState();
         require(crowdsaleState != State.FINISHED);
-        WalletHasChanged(wallet, _newWallet);
+        emit WalletHasChanged(wallet, _newWallet);
         wallet = _newWallet;
     }
 
@@ -250,7 +250,7 @@ contract Crowdsale is UsingFiatPrice {
     function setNewStartDate(uint256 _newDate) public onlyOwner {
         checkState();
         require(crowdsaleState == State.NOT_STARTED);
-        StartDateMoved(privateSaleStartDate, _newDate);
+        emit StartDateMoved(privateSaleStartDate, _newDate);
         setDates(_newDate, privateSaleDuration, preIcoDuration, icoDuration);
     }
 
@@ -267,7 +267,7 @@ contract Crowdsale is UsingFiatPrice {
         require(crowdsaleState != State.NOT_STARTED && crowdsaleState != State.FINISHED);
         require(tokensSold.add(_amount) < currentHardCap);
 
-        ManualTokenSend(_receiver, _amount);
+        emit ManualTokenSend(_receiver, _amount);
 
         if (token.balanceOf(_receiver) == 0) {
             investorsList.push(_receiver);
@@ -285,7 +285,7 @@ contract Crowdsale is UsingFiatPrice {
         checkState();
         require(crowdsaleState == State.FINISHED);
 
-        FundsWithdrawn(wallet, weiRaised);
+        emit FundsWithdrawn(wallet, weiRaised);
         wallet.transfer(weiRaised);
     }
 
@@ -353,22 +353,22 @@ contract Crowdsale is UsingFiatPrice {
             crowdsaleState = State.NOT_STARTED;
         } else if (now >= privateSaleStartDate && now < preIcoStartDate) {
             //Crowdsale is in Private Sale state. Set state to PRIVATE and update hard cap to private sale hard cap
-            StateHasChanged(State.NOT_STARTED, State.PRIVATE);
+            emit StateHasChanged(State.NOT_STARTED, State.PRIVATE);
             crowdsaleState = State.PRIVATE;
             currentHardCap = privateSaleHardCap;
         } else if (now >= preIcoStartDate && now < icoStartDate) {
             //Crowdsale is in Pre-ICO state. Set state to PRE_ICO and update hard cap to Pre-ICO hard cap
-            StateHasChanged(State.PRIVATE, State.PRE_ICO);
+            emit StateHasChanged(State.PRIVATE, State.PRE_ICO);
             crowdsaleState = State.PRE_ICO;
             currentHardCap = preIcoHardCap;
         } else if (now >= icoStartDate && now < icoStartDate + icoDuration) {
             //Crowdsale is in ICO state. Set state to ICO and update hard cap to ICO hard cap
-            StateHasChanged(State.PRE_ICO, State.ICO);
+            emit StateHasChanged(State.PRE_ICO, State.ICO);
             crowdsaleState = State.ICO;
             currentHardCap = icoHardCap;
         } else {
             //Crowdsale has finished. Set state to FINISHED
-            StateHasChanged(State.ICO, State.FINISHED);
+            emit StateHasChanged(State.ICO, State.FINISHED);
             crowdsaleState = State.FINISHED;
         }
     }
