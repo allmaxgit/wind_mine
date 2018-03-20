@@ -146,6 +146,11 @@ contract Crowdsale is UsingFiatPrice {
     WindMineToken public token;
 
     /**
+     * @dev Mapping of number of tokens ordered during sale stages
+     */
+    mapping (address => uint256) public tokensOrdered;
+
+    /**
      * @dev Mapping of private participants
      * @notice If bool flag is set to true, then this address is allowed to participate in the Private Sale stage
      */
@@ -171,6 +176,8 @@ contract Crowdsale is UsingFiatPrice {
     event FundsWithdrawn(address _wallet, uint256 _amount);
     event WalletHasChanged(address _oldWallet, address _newWallet);
     event StartDateMoved(uint256 _oldDate, uint256 _newDate);
+    event TokensAreOrdered(address _orderer, uint256 _amount);
+    event TokensAreRetrieved(address _retriever, uint256 _amount);
 
     /**
      * @dev Crowdsale constructor, which calls parent UsingFiatPrice constructor
@@ -197,6 +204,122 @@ contract Crowdsale is UsingFiatPrice {
         token = new WindMineToken(_foundersWallet);
     }
 
+    function getInvestorsListLength() public view returns (uint256) {
+        return investorsList.length;
+    }
+
+    /**
+     * @dev Users can send ETH directly to the crowdsale to buy tokens
+     */
+    function() public payable {
+        buyTokens(msg.sender);
+    }
+
+    /**
+     * @dev Function for handling received ETH and sending tokens to sender
+     * @param _sender Address of funds sender
+     */
+    function buyTokens(address _sender) public payable nonReentrant {
+        checkState();
+        require(_sender != address(0));
+        require(crowdsaleState != State.NOT_STARTED);
+        require(crowdsaleState != State.FINISHED);
+        require(msg.value > 0);
+
+        if (crowdsaleState == State.PRIVATE) {
+            require(privateParticipants[_sender]);
+        }
+
+        //TODO Add KYC check
+
+        uint256 sentWei = msg.value;
+        uint256 fiatAmount = sentWei.div(weiInFiat);
+        //Fiat equivalent of received wei is bigger than one integral unit of fiat currency
+        require(fiatAmount >= 10 ** fiatDecimals);
+        uint256 tokens;
+        uint256 stagePriceInFiatFracture;
+        uint256 change;
+        uint256 realReceivedWei;
+        if (crowdsaleState == State.PRIVATE) {
+            stagePriceInFiatFracture = privatePriceInFiatFracture;
+        } else if (crowdsaleState == State.PRE_ICO) {
+            stagePriceInFiatFracture = preIcoPriceInFiatFracture;
+        } else if (crowdsaleState == State.ICO) {
+            stagePriceInFiatFracture = icoPriceInFiatFracture;
+        }
+        tokens = fiatAmount.div(stagePriceInFiatFracture);
+
+        require(tokens > 0);
+
+        if (tokensSold.add(tokens) > currentHardCap) {
+            tokens = currentHardCap.sub(tokensSold);
+            realReceivedWei = tokens.mul(stagePriceInFiatFracture).mul(weiInFiat);
+            change = sentWei.sub(realReceivedWei);
+        } else {
+            realReceivedWei = sentWei;
+        }
+
+        tokensSold = tokensSold.add(tokens);
+        weiRaised = weiRaised.add(realReceivedWei);
+
+        if (token.balanceOf(_sender) == 0) {
+            investorsList.push(_sender);
+        }
+
+        if (change > 0) {
+            _sender.transfer(change);
+        }
+
+        tokens = tokens.mul(10 ** token.decimals());
+        tokensOrdered[_sender] = tokensOrdered[_sender].add(tokens);
+
+        emit TokensAreOrdered(_sender, tokens);
+    }
+
+    /**
+     * @dev Sends tokens, ordered during sale periods, to the caller
+     */
+    function retrieveOrderedTokens() public {
+        require(crowdsaleState == State.FINISHED);
+        require(tokensOrdered[msg.sender] > 0);
+
+        //TODO add KYC check
+        uint256 tokens = tokensOrdered[msg.sender];
+        tokensOrdered[msg.sender] = 0;
+
+        token.transfer(msg.sender, tokens);
+        emit TokensAreRetrieved(msg.sender, tokens);
+    }
+
+    /**
+     * @dev Checks crowdsale state and updates state field and current stage hard cap
+     */
+    function checkState() public {
+        if (now < privateSaleStartDate) {
+            //Crowdsale is not started yet
+            crowdsaleState = State.NOT_STARTED;
+        } else if (now >= privateSaleStartDate && now < preIcoStartDate) {
+            //Crowdsale is in Private Sale state. Set state to PRIVATE and update hard cap to private sale hard cap
+            emit StateHasChanged(State.NOT_STARTED, State.PRIVATE);
+            crowdsaleState = State.PRIVATE;
+            currentHardCap = privateSaleHardCap;
+        } else if (now >= preIcoStartDate && now < icoStartDate) {
+            //Crowdsale is in Pre-ICO state. Set state to PRE_ICO and update hard cap to Pre-ICO hard cap
+            emit StateHasChanged(State.PRIVATE, State.PRE_ICO);
+            crowdsaleState = State.PRE_ICO;
+            currentHardCap = preIcoHardCap;
+        } else if (now >= icoStartDate && now < icoStartDate + icoDuration) {
+            //Crowdsale is in ICO state. Set state to ICO and update hard cap to ICO hard cap
+            emit StateHasChanged(State.PRE_ICO, State.ICO);
+            crowdsaleState = State.ICO;
+            currentHardCap = icoHardCap;
+        } else {
+            //Crowdsale has finished. Set state to FINISHED
+            emit StateHasChanged(State.ICO, State.FINISHED);
+            crowdsaleState = State.FINISHED;
+        }
+    }
+
     /**
      * @dev Prepares crowdsale by setting hard caps for stages using information from token
      */
@@ -208,17 +331,7 @@ contract Crowdsale is UsingFiatPrice {
         privatePriceInFiatFracture = (10 ** fiatDecimals).mul(25).div(100);
         preIcoPriceInFiatFracture = (10 ** fiatDecimals).mul(50).div(100);
         icoPriceInFiatFracture = 10 ** fiatDecimals;
-    }
-
-    function getInvestorsListLength() public view returns (uint256) {
-        return investorsList.length;
-    }
-
-    /**
-     * @dev Users can send ETH directly to the crowdsale to buy tokens
-     */
-    function() public payable {
-        buyTokens(msg.sender);
+        checkState();
     }
 
     /**
@@ -267,14 +380,20 @@ contract Crowdsale is UsingFiatPrice {
         require(crowdsaleState != State.NOT_STARTED && crowdsaleState != State.FINISHED);
         require(tokensSold.add(_amount) < currentHardCap);
 
-        emit ManualTokenSend(_receiver, _amount);
+        if (crowdsaleState == State.PRIVATE) {
+            require(privateParticipants[_receiver]);
+        }
+
+        //TODO ADD KYC check
 
         if (token.balanceOf(_receiver) == 0) {
             investorsList.push(_receiver);
         }
 
         tokensSold = tokensSold.add(_amount);
-        token.transfer(_receiver, _amount);
+        tokensOrdered[_receiver] = tokensOrdered[_receiver].add(_amount);
+
+        emit TokensAreOrdered(_receiver, _amount);
     }
 
     /**
@@ -285,92 +404,10 @@ contract Crowdsale is UsingFiatPrice {
         checkState();
         require(crowdsaleState == State.FINISHED);
 
+        //TODO Add multi signature
+
         emit FundsWithdrawn(wallet, weiRaised);
         wallet.transfer(weiRaised);
-    }
-
-    /**
-     * @dev Function for handling received ETH and sending tokens to sender
-     * @param _sender Address of funds sender
-     */
-    function buyTokens(address _sender) public payable nonReentrant {
-        checkState();
-        require(_sender != address(0));
-        require(crowdsaleState != State.NOT_STARTED);
-        require(crowdsaleState != State.FINISHED);
-        require(msg.value > 0);
-
-        if (crowdsaleState == State.PRIVATE) {
-            require(privateParticipants[_sender]);
-        }
-
-        uint256 sentWei = msg.value;
-        uint256 fiatAmount = sentWei.div(weiInFiat);
-        //Fiat equivalent of received wei is bigger than one integral unit of fiat currency
-        require(fiatAmount >= 10 ** fiatDecimals);
-        uint256 tokens;
-        uint256 stagePriceInFiatFracture;
-        uint256 change;
-        uint256 realReceivedWei;
-        if (crowdsaleState == State.PRIVATE) {
-            stagePriceInFiatFracture = privatePriceInFiatFracture;
-        } else if (crowdsaleState == State.PRE_ICO) {
-            stagePriceInFiatFracture = preIcoPriceInFiatFracture;
-        } else if (crowdsaleState == State.ICO) {
-            stagePriceInFiatFracture = icoPriceInFiatFracture;
-        }
-        tokens = fiatAmount.div(stagePriceInFiatFracture);
-        assert(tokens > 0);
-        if (tokensSold.add(tokens) > currentHardCap) {
-            tokens = currentHardCap.sub(tokensSold);
-            realReceivedWei = tokens.mul(stagePriceInFiatFracture).mul(weiInFiat);
-            change = sentWei.sub(realReceivedWei);
-        } else {
-            realReceivedWei = sentWei;
-        }
-
-        tokensSold = tokensSold.add(tokens);
-        weiRaised = weiRaised.add(realReceivedWei);
-
-        if (token.balanceOf(_sender) == 0) {
-            investorsList.push(_sender);
-        }
-
-        if (change > 0) {
-            _sender.transfer(change);
-        }
-
-        tokens = tokens.mul(10 ** token.decimals());
-        token.transfer(_sender, tokens);
-    }
-
-    /**
-     * @dev Checks crowdsale state and updates state field and current stage hard cap
-     */
-    function checkState() public {
-        if (now < privateSaleStartDate) {
-            //Crowdsale is not started yet
-            crowdsaleState = State.NOT_STARTED;
-        } else if (now >= privateSaleStartDate && now < preIcoStartDate) {
-            //Crowdsale is in Private Sale state. Set state to PRIVATE and update hard cap to private sale hard cap
-            emit StateHasChanged(State.NOT_STARTED, State.PRIVATE);
-            crowdsaleState = State.PRIVATE;
-            currentHardCap = privateSaleHardCap;
-        } else if (now >= preIcoStartDate && now < icoStartDate) {
-            //Crowdsale is in Pre-ICO state. Set state to PRE_ICO and update hard cap to Pre-ICO hard cap
-            emit StateHasChanged(State.PRIVATE, State.PRE_ICO);
-            crowdsaleState = State.PRE_ICO;
-            currentHardCap = preIcoHardCap;
-        } else if (now >= icoStartDate && now < icoStartDate + icoDuration) {
-            //Crowdsale is in ICO state. Set state to ICO and update hard cap to ICO hard cap
-            emit StateHasChanged(State.PRE_ICO, State.ICO);
-            crowdsaleState = State.ICO;
-            currentHardCap = icoHardCap;
-        } else {
-            //Crowdsale has finished. Set state to FINISHED
-            emit StateHasChanged(State.ICO, State.FINISHED);
-            crowdsaleState = State.FINISHED;
-        }
     }
 
     /**
