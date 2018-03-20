@@ -151,6 +151,21 @@ contract Crowdsale is UsingFiatPrice {
     mapping (address => uint256) public tokensOrdered;
 
     /**
+     * @dev Mapping of withdrawal signers and flags, whether they signed withdrawal or not
+     */
+    mapping (address => bool) public withdrawalApproved;
+
+    /**
+     * @dev Maps address to a flag, whether this address is the withdrawal signer or not
+     */
+    mapping (address => bool) public isWithdrawalSigner;
+
+    /**
+     * @dev An array of addresses, which should approve funds withdrawal before they can be withdrawn
+     */
+    address[] public withdrawalSigners;
+
+    /**
      * @dev Mapping of private participants
      * @notice If bool flag is set to true, then this address is allowed to participate in the Private Sale stage
      */
@@ -162,6 +177,11 @@ contract Crowdsale is UsingFiatPrice {
     bool private reentrancy_lock = false;
 
     /**
+     * @dev Locks changing withdrawal signers, so signers can be set only once
+     */
+    bool private signers_change_locked = false;
+
+    /**
      * @dev Prevents a contract from calling itself, directly or indirectly.
      */
     modifier nonReentrant() {
@@ -171,6 +191,14 @@ contract Crowdsale is UsingFiatPrice {
         reentrancy_lock = false;
     }
 
+    /**
+     * @dev Restricts calls to the withdrawal signers only
+     */
+    modifier withdrawalSignerOnly() {
+        require(isWithdrawalSigner[msg.sender]);
+        _;
+    }
+
     event ManualTokenSend(address _receiver, uint256 _amount);
     event StateHasChanged(State _oldState, State _newState);
     event FundsWithdrawn(address _wallet, uint256 _amount);
@@ -178,6 +206,8 @@ contract Crowdsale is UsingFiatPrice {
     event StartDateMoved(uint256 _oldDate, uint256 _newDate);
     event TokensAreOrdered(address _orderer, uint256 _amount);
     event TokensAreRetrieved(address _retriever, uint256 _amount);
+    event WithdrawalIsApproved(address _signer);
+    event WithdrawalIsDisapproved(address _signer);
 
     /**
      * @dev Crowdsale constructor, which calls parent UsingFiatPrice constructor
@@ -321,6 +351,28 @@ contract Crowdsale is UsingFiatPrice {
     }
 
     /**
+     * @dev Approve raised funds withdrawal
+     * @notice Caller should be withdrawal signer to successfule call this function
+     */
+    function approveWithdrawal() public withdrawalSignerOnly {
+        // check that signer hasn't already approved withdrawal
+        require(!withdrawalApproved[msg.sender]);
+        withdrawalApproved[msg.sender] = true;
+        emit WithdrawalIsApproved(msg.sender);
+    }
+
+    /**
+     * @dev Disapprove raised funds withdrawal
+     * @notice Caller should be withdrawal signer to successfule call this function
+     */
+    function disapproveWithdrawal() public withdrawalSignerOnly {
+        // check that signer hasn't already disapproved withdrawal
+        require(withdrawalApproved[msg.sender]);
+        withdrawalApproved[msg.sender] = false;
+        emit WithdrawalIsDisapproved(msg.sender);
+    }
+
+    /**
      * @dev Prepares crowdsale by setting hard caps for stages using information from token
      */
     function prepareCrowdsale() public onlyOwner {
@@ -332,6 +384,21 @@ contract Crowdsale is UsingFiatPrice {
         preIcoPriceInFiatFracture = (10 ** fiatDecimals).mul(50).div(100);
         icoPriceInFiatFracture = 10 ** fiatDecimals;
         checkState();
+    }
+
+    /**
+     * @dev Sets the list of addresses, who should approve raised funds withdrawal
+     * @notice Too big array of address wil cause "Out of gas" error
+     * @notice Signers can be set only once
+     */
+    function addWithdrawalSigners(address[] _signers) public onlyOwner {
+        require(!signers_change_locked);
+        withdrawalSigners = _signers;
+        signers_change_locked = true;
+
+        for(uint i = 0; i < _signers.length; i++) {
+            isWithdrawalSigner[_signers[i]] = true;
+        }
     }
 
     /**
@@ -404,7 +471,10 @@ contract Crowdsale is UsingFiatPrice {
         checkState();
         require(crowdsaleState == State.FINISHED);
 
-        //TODO Add multi signature
+        // Check if all withdrawal signers approved withdrawal
+        for (uint i = 0; i < withdrawalSigners.length; i++) {
+            require(withdrawalApproved[withdrawalSigners[i]]);
+        }
 
         emit FundsWithdrawn(wallet, weiRaised);
         wallet.transfer(weiRaised);
