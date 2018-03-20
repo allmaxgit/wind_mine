@@ -11,9 +11,9 @@ type Configs struct {
 }
 
 type Common struct {
-	Dev         bool
-	LogsOutPath string
-	StorePath   string
+	Dev        bool
+	LogOutPath string
+	StorePath  string
 
 }
 

@@ -35,7 +35,7 @@ func main() {
 	if *prod {
 		conf.Common.Dev = false
 
-		err := utils.SetupLogFile("logPath")
+		err := utils.SetupLogFile(conf.Common.LogOutPath)
 		if err != nil {
 			uErr.Fatal(err, "failed to setup log file")
 		}
