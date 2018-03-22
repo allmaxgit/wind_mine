@@ -119,7 +119,7 @@ func GetTokenPrice() (err error) {
 // ConvertBTCToTokens converts BTC to ICO tokens.
 func ConvertBTCToTokens(btcValue float64) (*big.Int) {
 	tokens := new(big.Int)
-	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100 * math.Pow10(18))
+	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100 * math.Pow10(8))
 	inEuroCents.Int(tokens)
 	tokens.Quo(tokens, euroCents)
 
