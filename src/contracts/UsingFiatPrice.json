@@ -1,0 +1,2011 @@
+{
+  "contractName": "UsingFiatPrice",
+  "abi": [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fiatSymbol",
+      "outputs": [
+        {
+          "name": "",
+          "type": "string"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+        {
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "weiInFiat",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "lastUpdated",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "fiatDecimals",
+      "outputs": [
+        {
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "name": "_fiatSymbol",
+          "type": "string"
+        },
+        {
+          "name": "_fiatDecimals",
+          "type": "uint256"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": false,
+          "name": "_oldRate",
+          "type": "uint256"
+        },
+        {
+          "indexed": false,
+          "name": "_newRate",
+          "type": "uint256"
+        }
+      ],
+      "name": "RateUpdated",
+      "type": "event"
+    },
+    {
+      "anonymous": false,
+      "inputs": [
+        {
+          "indexed": true,
+          "name": "previousOwner",
+          "type": "address"
+        },
+        {
+          "indexed": true,
+          "name": "newOwner",
+          "type": "address"
+        }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+    },
+    {
+      "constant": false,
+      "inputs": [
+        {
+          "name": "_weiInFiat",
+          "type": "uint256"
+        }
+      ],
+      "name": "updateWeiInFiat",
+      "outputs": [],
+      "payable": false,
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x6060604052341561000f57600080fd5b6040516104e53803806104e58339810160405280805182019190602001805160008054600160a060020a03191633600160a060020a03161790559150506002811080159061005e575060128111155b151561006957600080fd5b600182805161007c929160200190610086565b5060025550610121565b828054600181600116156101000203166002900490600052602060002090601f016020900481019282601f106100c757805160ff19168380011785556100f4565b828001600101855582156100f4579182015b828111156100f45782518255916020019190600101906100d9565b50610100929150610104565b5090565b61011e91905b80821115610100576000815560010161010a565b90565b6103b5806101306000396000f3006060604052600436106100825763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416631755bf3d811461008757806327631d021461009f5780638da5cb5b14610129578063b24a129014610158578063d0b06f5d1461017d578063f2fde38b14610190578063f5890e46146101af575b600080fd5b341561009257600080fd5b61009d6004356101c2565b005b34156100aa57600080fd5b6100b261022f565b60405160208082528190810183818151815260200191508051906020019080838360005b838110156100ee5780820151838201526020016100d6565b50505050905090810190601f16801561011b5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b341561013457600080fd5b61013c6102cd565b604051600160a060020a03909116815260200160405180910390f35b341561016357600080fd5b61016b6102dc565b60405190815260200160405180910390f35b341561018857600080fd5b61016b6102e2565b341561019b57600080fd5b61009d600160a060020a03600435166102e8565b34156101ba57600080fd5b61016b610383565b60005433600160a060020a039081169116146101dd57600080fd5b600081116101ea57600080fd5b7fb38780ddde1f073d91c150de2696f3f7085883648ba21cc5ef01029cb21d19166003548260405191825260208201526040908101905180910390a160035542600455565b60018054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156102c55780601f1061029a576101008083540402835291602001916102c5565b820191906000526020600020905b8154815290600101906020018083116102a857829003601f168201915b505050505081565b600054600160a060020a031681565b60035481565b60045481565b60005433600160a060020a0390811691161461030357600080fd5b600160a060020a038116151561031857600080fd5b600054600160a060020a0380831691167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a36000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600254815600a165627a7a7230582088783f9fe7c99fa84a5500e6e09d07e37845db187959e8c5a13815d9f0a6ee930029",
+  "deployedBytecode": "0x6060604052600436106100825763ffffffff7c01000000000000000000000000000000000000000000000000000000006000350416631755bf3d811461008757806327631d021461009f5780638da5cb5b14610129578063b24a129014610158578063d0b06f5d1461017d578063f2fde38b14610190578063f5890e46146101af575b600080fd5b341561009257600080fd5b61009d6004356101c2565b005b34156100aa57600080fd5b6100b261022f565b60405160208082528190810183818151815260200191508051906020019080838360005b838110156100ee5780820151838201526020016100d6565b50505050905090810190601f16801561011b5780820380516001836020036101000a031916815260200191505b509250505060405180910390f35b341561013457600080fd5b61013c6102cd565b604051600160a060020a03909116815260200160405180910390f35b341561016357600080fd5b61016b6102dc565b60405190815260200160405180910390f35b341561018857600080fd5b61016b6102e2565b341561019b57600080fd5b61009d600160a060020a03600435166102e8565b34156101ba57600080fd5b61016b610383565b60005433600160a060020a039081169116146101dd57600080fd5b600081116101ea57600080fd5b7fb38780ddde1f073d91c150de2696f3f7085883648ba21cc5ef01029cb21d19166003548260405191825260208201526040908101905180910390a160035542600455565b60018054600181600116156101000203166002900480601f0160208091040260200160405190810160405280929190818152602001828054600181600116156101000203166002900480156102c55780601f1061029a576101008083540402835291602001916102c5565b820191906000526020600020905b8154815290600101906020018083116102a857829003601f168201915b505050505081565b600054600160a060020a031681565b60035481565b60045481565b60005433600160a060020a0390811691161461030357600080fd5b600160a060020a038116151561031857600080fd5b600054600160a060020a0380831691167f8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e060405160405180910390a36000805473ffffffffffffffffffffffffffffffffffffffff1916600160a060020a0392909216919091179055565b600254815600a165627a7a7230582088783f9fe7c99fa84a5500e6e09d07e37845db187959e8c5a13815d9f0a6ee930029",
+  "sourceMap": "177:1983:8:-;;;1554:213;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;501:5:5;:18;;-1:-1:-1;;;;;;501:18:5;509:10;-1:-1:-1;;;;;501:18:5;;;;1554:213:8;-1:-1:-1;;1663:1:8;1646:18;;;;;:41;;;1685:2;1668:13;:19;;1646:41;1638:50;;;;;;;;1698:10;1711:11;;1698:24;;;;;;;;:::i;:::-;-1:-1:-1;1732:12:8;:28;-1:-1:-1;177:1983:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;177:1983:8;;;-1:-1:-1;177:1983:8;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;:::o;:::-;;;;;;;",
+  "deployedSourceMap": "177:1983:8:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;1951:207;;;;;;;;;;;;;;;;405:24;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;71:11;;;64:39;52:2;45:10;8:100;;;12:14;405:24:8;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;238:20:5;;;;;;;;;;;;;;;-1:-1:-1;;;;;238:20:5;;;;;;;;;;;;;;853:24:8;;;;;;;;;;;;;;;;;;;;;;;;;;;987:26;;;;;;;;;;;;832:169:5;;;;;;;;;;-1:-1:-1;;;;;832:169:5;;;;;599:27:8;;;;;;;;;;;;1951:207;653:5:5;;639:10;-1:-1:-1;;;;;639:19:5;;;653:5;;639:19;631:28;;;;;;2046:1:8;2033:14;;2025:23;;;;;;2058:34;2070:9;;2081:10;2058:34;;;;;;;;;;;;;;;;;;;;2102:9;:22;2148:3;2134:11;:17;1951:207::o;405:24::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o;238:20:5:-;;;-1:-1:-1;;;;;238:20:5;;:::o;853:24:8:-;;;;:::o;987:26::-;;;;:::o;832:169:5:-;653:5;;639:10;-1:-1:-1;;;;;639:19:5;;;653:5;;639:19;631:28;;;;;;-1:-1:-1;;;;;908:22:5;;;;900:31;;;;;;958:5;;-1:-1:-1;;;;;937:37:5;;;;958:5;937:37;;;;;;;;;;980:5;:16;;-1:-1:-1;;980:16:5;-1:-1:-1;;;;;980:16:5;;;;;;;;;;832:169::o;599:27:8:-;;;;:::o",
+  "source": "pragma solidity ^0.4.18;\n\nimport './Ownable.sol';\n\n/**\n * @title UsingFiatPrice\n * @dev General contract for updating ETH to fiat currency exchange rate from external source\n*/\ncontract UsingFiatPrice is Ownable {\n\n    /**\n     * @title fiatSymbol\n     * @dev Fiat currency symbol for informational purposes only\n     * @notice Once it is set, it cannot be changed without redeploying contract\n    */\n    string public fiatSymbol;\n\n    /**\n     * @title fiatDecimals\n     * @dev Number of decimal places in a used currency. Can be used for calculations or for informational purposes only\n    */\n    uint256 public fiatDecimals;\n\n    /**\n     * @title weiInFiat\n     * @dev Amount of wei in minimum fracture of the fiat currency\n     * @notice Intended to be used for calculating number of bought tokens with token price set in fiat currency\n     */\n    uint256 public weiInFiat;\n\n    /**\n     * @title lastUpdated\n     * @dev Unix timestamp which shows last rate update time\n     */\n    uint256 public lastUpdated;\n\n    /**\n     * @dev This event is raised when exchange rate is updated\n     * @param _oldRate Old exchange rate - before update\n     * @param _newRate New exchange rate - after update\n     */\n    event RateUpdated(uint256 _oldRate, uint256 _newRate);\n\n    /**\n     * @dev UsingFiatPrice constructor\n     * @param _fiatSymbol Fiat currency symbol for informational purposes only\n     * @param _fiatDecimals Number of decimal places in a used fiat currency. E.g. _fiatDecimals is 2 for USD - minimal fracture of USD is 0.01 USD\n     */\n    function UsingFiatPrice(string _fiatSymbol, uint256 _fiatDecimals) public {\n        require(_fiatDecimals >= 2 && _fiatDecimals <= 18);\n        fiatSymbol = _fiatSymbol;\n        fiatDecimals = _fiatDecimals;\n    }\n\n    /**\n     * @dev Updates wei to fiat currency exchange rate\n     * @param _weiInFiat Number of wei in minimum fracture of \"fiatSymbol\". E.g. Number of wei in 0.01 USD\n     */\n    function updateWeiInFiat(uint256 _weiInFiat) external onlyOwner {\n        require(_weiInFiat > 0);\n        RateUpdated(weiInFiat, _weiInFiat);\n        weiInFiat = _weiInFiat;\n        lastUpdated = now;\n    }\n}\n",
+  "sourcePath": "/home/lev/go/src/WindToken/contracts/UsingFiatPrice.sol",
+  "ast": {
+    "absolutePath": "/home/lev/go/src/WindToken/contracts/UsingFiatPrice.sol",
+    "exportedSymbols": {
+      "UsingFiatPrice": [
+        1865
+      ]
+    },
+    "id": 1866,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1794,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".18"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:8"
+      },
+      {
+        "absolutePath": "/home/lev/go/src/WindToken/contracts/Ownable.sol",
+        "file": "./Ownable.sol",
+        "id": 1795,
+        "nodeType": "ImportDirective",
+        "scope": 1866,
+        "sourceUnit": 1449,
+        "src": "26:23:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": [],
+            "baseName": {
+              "contractScope": null,
+              "id": 1796,
+              "name": "Ownable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1448,
+              "src": "204:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Ownable_$1448",
+                "typeString": "contract Ownable"
+              }
+            },
+            "id": 1797,
+            "nodeType": "InheritanceSpecifier",
+            "src": "204:7:8"
+          }
+        ],
+        "contractDependencies": [
+          1448
+        ],
+        "contractKind": "contract",
+        "documentation": "@title UsingFiatPrice\n@dev General contract for updating ETH to fiat currency exchange rate from external source",
+        "fullyImplemented": true,
+        "id": 1865,
+        "linearizedBaseContracts": [
+          1865,
+          1448
+        ],
+        "name": "UsingFiatPrice",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 1799,
+            "name": "fiatSymbol",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "405:24:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string storage ref"
+            },
+            "typeName": {
+              "id": 1798,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "405:6:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string storage pointer"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1801,
+            "name": "fiatDecimals",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "599:27:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1800,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "599:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1803,
+            "name": "weiInFiat",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "853:24:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1802,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "853:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1805,
+            "name": "lastUpdated",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "987:26:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1804,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "987:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": "@dev This event is raised when exchange rate is updated\n@param _oldRate Old exchange rate - before update\n@param _newRate New exchange rate - after update",
+            "id": 1811,
+            "name": "RateUpdated",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1810,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1807,
+                  "indexed": false,
+                  "name": "_oldRate",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1811,
+                  "src": "1230:16:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1806,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1230:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1809,
+                  "indexed": false,
+                  "name": "_newRate",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1811,
+                  "src": "1248:16:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1808,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1248:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1229:36:8"
+            },
+            "src": "1212:54:8"
+          },
+          {
+            "body": {
+              "id": 1836,
+              "nodeType": "Block",
+              "src": "1628:139:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "id": 1825,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 1821,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 1819,
+                            "name": "_fiatDecimals",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1815,
+                            "src": "1646:13:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": ">=",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "hexValue": "32",
+                            "id": 1820,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "1663:1:8",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_2_by_1",
+                              "typeString": "int_const 2"
+                            },
+                            "value": "2"
+                          },
+                          "src": "1646:18:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "&&",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 1824,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 1822,
+                            "name": "_fiatDecimals",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1815,
+                            "src": "1668:13:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<=",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "hexValue": "3138",
+                            "id": 1823,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "1685:2:8",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_18_by_1",
+                              "typeString": "int_const 18"
+                            },
+                            "value": "18"
+                          },
+                          "src": "1668:19:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "src": "1646:41:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1818,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1956,
+                      "src": "1638:7:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 1826,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1638:50:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1827,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1638:50:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1830,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1828,
+                      "name": "fiatSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1799,
+                      "src": "1698:10:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage",
+                        "typeString": "string storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1829,
+                      "name": "_fiatSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1813,
+                      "src": "1711:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
+                      }
+                    },
+                    "src": "1698:24:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage",
+                      "typeString": "string storage ref"
+                    }
+                  },
+                  "id": 1831,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1698:24:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1834,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1832,
+                      "name": "fiatDecimals",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1801,
+                      "src": "1732:12:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1833,
+                      "name": "_fiatDecimals",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1815,
+                      "src": "1747:13:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1732:28:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1835,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1732:28:8"
+                }
+              ]
+            },
+            "documentation": "@dev UsingFiatPrice constructor\n@param _fiatSymbol Fiat currency symbol for informational purposes only\n@param _fiatDecimals Number of decimal places in a used fiat currency. E.g. _fiatDecimals is 2 for USD - minimal fracture of USD is 0.01 USD",
+            "id": 1837,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "UsingFiatPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1816,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1813,
+                  "name": "_fiatSymbol",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1837,
+                  "src": "1578:18:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string memory"
+                  },
+                  "typeName": {
+                    "id": 1812,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1578:6:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string storage pointer"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1815,
+                  "name": "_fiatDecimals",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1837,
+                  "src": "1598:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1814,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1598:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1577:43:8"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1817,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1628:0:8"
+            },
+            "scope": 1865,
+            "src": "1554:213:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 1863,
+              "nodeType": "Block",
+              "src": "2015:143:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 1847,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 1845,
+                          "name": "_weiInFiat",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 1839,
+                          "src": "2033:10:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": ">",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 1846,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2046:1:8",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "2033:14:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1844,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1956,
+                      "src": "2025:7:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 1848,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2025:23:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1849,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2025:23:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1851,
+                        "name": "weiInFiat",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1803,
+                        "src": "2070:9:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 1852,
+                        "name": "_weiInFiat",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1839,
+                        "src": "2081:10:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 1850,
+                      "name": "RateUpdated",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1811,
+                      "src": "2058:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$returns$__$",
+                        "typeString": "function (uint256,uint256)"
+                      }
+                    },
+                    "id": 1853,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2058:34:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1854,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2058:34:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1857,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1855,
+                      "name": "weiInFiat",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1803,
+                      "src": "2102:9:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1856,
+                      "name": "_weiInFiat",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1839,
+                      "src": "2114:10:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2102:22:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1858,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2102:22:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1861,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1859,
+                      "name": "lastUpdated",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1805,
+                      "src": "2134:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1860,
+                      "name": "now",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1955,
+                      "src": "2148:3:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2134:17:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1862,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2134:17:8"
+                }
+              ]
+            },
+            "documentation": "@dev Updates wei to fiat currency exchange rate\n@param _weiInFiat Number of wei in minimum fracture of \"fiatSymbol\". E.g. Number of wei in 0.01 USD",
+            "id": 1864,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": [],
+                "id": 1842,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 1841,
+                  "name": "onlyOwner",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1422,
+                  "src": "2005:9:8",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2005:9:8"
+              }
+            ],
+            "name": "updateWeiInFiat",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1840,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1839,
+                  "name": "_weiInFiat",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1864,
+                  "src": "1976:18:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1838,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1976:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1975:20:8"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1843,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2015:0:8"
+            },
+            "scope": 1865,
+            "src": "1951:207:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1866,
+        "src": "177:1983:8"
+      }
+    ],
+    "src": "0:2161:8"
+  },
+  "legacyAST": {
+    "absolutePath": "/home/lev/go/src/WindToken/contracts/UsingFiatPrice.sol",
+    "exportedSymbols": {
+      "UsingFiatPrice": [
+        1865
+      ]
+    },
+    "id": 1866,
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 1794,
+        "literals": [
+          "solidity",
+          "^",
+          "0.4",
+          ".18"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:24:8"
+      },
+      {
+        "absolutePath": "/home/lev/go/src/WindToken/contracts/Ownable.sol",
+        "file": "./Ownable.sol",
+        "id": 1795,
+        "nodeType": "ImportDirective",
+        "scope": 1866,
+        "sourceUnit": 1449,
+        "src": "26:23:8",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "baseContracts": [
+          {
+            "arguments": [],
+            "baseName": {
+              "contractScope": null,
+              "id": 1796,
+              "name": "Ownable",
+              "nodeType": "UserDefinedTypeName",
+              "referencedDeclaration": 1448,
+              "src": "204:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_contract$_Ownable_$1448",
+                "typeString": "contract Ownable"
+              }
+            },
+            "id": 1797,
+            "nodeType": "InheritanceSpecifier",
+            "src": "204:7:8"
+          }
+        ],
+        "contractDependencies": [
+          1448
+        ],
+        "contractKind": "contract",
+        "documentation": "@title UsingFiatPrice\n@dev General contract for updating ETH to fiat currency exchange rate from external source",
+        "fullyImplemented": true,
+        "id": 1865,
+        "linearizedBaseContracts": [
+          1865,
+          1448
+        ],
+        "name": "UsingFiatPrice",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "id": 1799,
+            "name": "fiatSymbol",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "405:24:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_string_storage",
+              "typeString": "string storage ref"
+            },
+            "typeName": {
+              "id": 1798,
+              "name": "string",
+              "nodeType": "ElementaryTypeName",
+              "src": "405:6:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_string_storage_ptr",
+                "typeString": "string storage pointer"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1801,
+            "name": "fiatDecimals",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "599:27:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1800,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "599:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1803,
+            "name": "weiInFiat",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "853:24:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1802,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "853:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "id": 1805,
+            "name": "lastUpdated",
+            "nodeType": "VariableDeclaration",
+            "scope": 1865,
+            "src": "987:26:8",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_uint256",
+              "typeString": "uint256"
+            },
+            "typeName": {
+              "id": 1804,
+              "name": "uint256",
+              "nodeType": "ElementaryTypeName",
+              "src": "987:7:8",
+              "typeDescriptions": {
+                "typeIdentifier": "t_uint256",
+                "typeString": "uint256"
+              }
+            },
+            "value": null,
+            "visibility": "public"
+          },
+          {
+            "anonymous": false,
+            "documentation": "@dev This event is raised when exchange rate is updated\n@param _oldRate Old exchange rate - before update\n@param _newRate New exchange rate - after update",
+            "id": 1811,
+            "name": "RateUpdated",
+            "nodeType": "EventDefinition",
+            "parameters": {
+              "id": 1810,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1807,
+                  "indexed": false,
+                  "name": "_oldRate",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1811,
+                  "src": "1230:16:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1806,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1230:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1809,
+                  "indexed": false,
+                  "name": "_newRate",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1811,
+                  "src": "1248:16:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1808,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1248:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1229:36:8"
+            },
+            "src": "1212:54:8"
+          },
+          {
+            "body": {
+              "id": 1836,
+              "nodeType": "Block",
+              "src": "1628:139:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        "id": 1825,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 1821,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 1819,
+                            "name": "_fiatDecimals",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1815,
+                            "src": "1646:13:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": ">=",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "hexValue": "32",
+                            "id": 1820,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "1663:1:8",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_2_by_1",
+                              "typeString": "int_const 2"
+                            },
+                            "value": "2"
+                          },
+                          "src": "1646:18:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": "&&",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "commonType": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          },
+                          "id": 1824,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "leftExpression": {
+                            "argumentTypes": null,
+                            "id": 1822,
+                            "name": "_fiatDecimals",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 1815,
+                            "src": "1668:13:8",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_uint256",
+                              "typeString": "uint256"
+                            }
+                          },
+                          "nodeType": "BinaryOperation",
+                          "operator": "<=",
+                          "rightExpression": {
+                            "argumentTypes": null,
+                            "hexValue": "3138",
+                            "id": 1823,
+                            "isConstant": false,
+                            "isLValue": false,
+                            "isPure": true,
+                            "kind": "number",
+                            "lValueRequested": false,
+                            "nodeType": "Literal",
+                            "src": "1685:2:8",
+                            "subdenomination": null,
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_rational_18_by_1",
+                              "typeString": "int_const 18"
+                            },
+                            "value": "18"
+                          },
+                          "src": "1668:19:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_bool",
+                            "typeString": "bool"
+                          }
+                        },
+                        "src": "1646:41:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1818,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1956,
+                      "src": "1638:7:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 1826,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "1638:50:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1827,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1638:50:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1830,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1828,
+                      "name": "fiatSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1799,
+                      "src": "1698:10:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage",
+                        "typeString": "string storage ref"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1829,
+                      "name": "_fiatSymbol",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1813,
+                      "src": "1711:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_memory_ptr",
+                        "typeString": "string memory"
+                      }
+                    },
+                    "src": "1698:24:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage",
+                      "typeString": "string storage ref"
+                    }
+                  },
+                  "id": 1831,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1698:24:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1834,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1832,
+                      "name": "fiatDecimals",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1801,
+                      "src": "1732:12:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1833,
+                      "name": "_fiatDecimals",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1815,
+                      "src": "1747:13:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "1732:28:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1835,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1732:28:8"
+                }
+              ]
+            },
+            "documentation": "@dev UsingFiatPrice constructor\n@param _fiatSymbol Fiat currency symbol for informational purposes only\n@param _fiatDecimals Number of decimal places in a used fiat currency. E.g. _fiatDecimals is 2 for USD - minimal fracture of USD is 0.01 USD",
+            "id": 1837,
+            "implemented": true,
+            "isConstructor": true,
+            "isDeclaredConst": false,
+            "modifiers": [],
+            "name": "UsingFiatPrice",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1816,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1813,
+                  "name": "_fiatSymbol",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1837,
+                  "src": "1578:18:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_memory_ptr",
+                    "typeString": "string memory"
+                  },
+                  "typeName": {
+                    "id": 1812,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1578:6:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string storage pointer"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 1815,
+                  "name": "_fiatDecimals",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1837,
+                  "src": "1598:21:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1814,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1598:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1577:43:8"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1817,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1628:0:8"
+            },
+            "scope": 1865,
+            "src": "1554:213:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 1863,
+              "nodeType": "Block",
+              "src": "2015:143:8",
+              "statements": [
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "commonType": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        "id": 1847,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "leftExpression": {
+                          "argumentTypes": null,
+                          "id": 1845,
+                          "name": "_weiInFiat",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 1839,
+                          "src": "2033:10:8",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_uint256",
+                            "typeString": "uint256"
+                          }
+                        },
+                        "nodeType": "BinaryOperation",
+                        "operator": ">",
+                        "rightExpression": {
+                          "argumentTypes": null,
+                          "hexValue": "30",
+                          "id": 1846,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "kind": "number",
+                          "lValueRequested": false,
+                          "nodeType": "Literal",
+                          "src": "2046:1:8",
+                          "subdenomination": null,
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_rational_0_by_1",
+                            "typeString": "int_const 0"
+                          },
+                          "value": "0"
+                        },
+                        "src": "2033:14:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      ],
+                      "id": 1844,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1956,
+                      "src": "2025:7:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$returns$__$",
+                        "typeString": "function (bool) pure"
+                      }
+                    },
+                    "id": 1848,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2025:23:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1849,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2025:23:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "arguments": [
+                      {
+                        "argumentTypes": null,
+                        "id": 1851,
+                        "name": "weiInFiat",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1803,
+                        "src": "2070:9:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "argumentTypes": null,
+                        "id": 1852,
+                        "name": "_weiInFiat",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 1839,
+                        "src": "2081:10:8",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "id": 1850,
+                      "name": "RateUpdated",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1811,
+                      "src": "2058:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_event_nonpayable$_t_uint256_$_t_uint256_$returns$__$",
+                        "typeString": "function (uint256,uint256)"
+                      }
+                    },
+                    "id": 1853,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "2058:34:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 1854,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2058:34:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1857,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1855,
+                      "name": "weiInFiat",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1803,
+                      "src": "2102:9:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1856,
+                      "name": "_weiInFiat",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1839,
+                      "src": "2114:10:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2102:22:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1858,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2102:22:8"
+                },
+                {
+                  "expression": {
+                    "argumentTypes": null,
+                    "id": 1861,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "argumentTypes": null,
+                      "id": 1859,
+                      "name": "lastUpdated",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1805,
+                      "src": "2134:11:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "argumentTypes": null,
+                      "id": 1860,
+                      "name": "now",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 1955,
+                      "src": "2148:3:8",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "src": "2134:17:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 1862,
+                  "nodeType": "ExpressionStatement",
+                  "src": "2134:17:8"
+                }
+              ]
+            },
+            "documentation": "@dev Updates wei to fiat currency exchange rate\n@param _weiInFiat Number of wei in minimum fracture of \"fiatSymbol\". E.g. Number of wei in 0.01 USD",
+            "id": 1864,
+            "implemented": true,
+            "isConstructor": false,
+            "isDeclaredConst": false,
+            "modifiers": [
+              {
+                "arguments": [],
+                "id": 1842,
+                "modifierName": {
+                  "argumentTypes": null,
+                  "id": 1841,
+                  "name": "onlyOwner",
+                  "nodeType": "Identifier",
+                  "overloadedDeclarations": [],
+                  "referencedDeclaration": 1422,
+                  "src": "2005:9:8",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_modifier$__$",
+                    "typeString": "modifier ()"
+                  }
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "2005:9:8"
+              }
+            ],
+            "name": "updateWeiInFiat",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 1840,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 1839,
+                  "name": "_weiInFiat",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 1864,
+                  "src": "1976:18:8",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 1838,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1976:7:8",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "value": null,
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1975:20:8"
+            },
+            "payable": false,
+            "returnParameters": {
+              "id": 1843,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "2015:0:8"
+            },
+            "scope": 1865,
+            "src": "1951:207:8",
+            "stateMutability": "nonpayable",
+            "superFunction": null,
+            "visibility": "external"
+          }
+        ],
+        "scope": 1866,
+        "src": "177:1983:8"
+      }
+    ],
+    "src": "0:2161:8"
+  },
+  "compiler": {
+    "name": "solc",
+    "version": "0.4.21+commit.dfe3193c.Emscripten.clang"
+  },
+  "networks": {},
+  "schemaVersion": "2.0.0",
+  "updatedAt": "2018-03-22T10:23:51.170Z"
+}
