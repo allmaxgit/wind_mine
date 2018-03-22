@@ -252,8 +252,6 @@ contract Crowdsale is UsingFiatPrice {
         setDates(_privateSaleStartDate, _privateSaleDuration, _preIcoDuration, _icoDuration);
         wallet = _wallet;
         token = new WindMineToken(_foundersWallet);
-
-        reserveFreezeTimestamp = now;
     }
 
     function getInvestorsListLength() public view returns (uint256) {
@@ -276,7 +274,7 @@ contract Crowdsale is UsingFiatPrice {
         require(_sender != address(0));
         require(crowdsaleState != State.NOT_STARTED);
         require(crowdsaleState != State.FINISHED);
-        require(msg.value > 0);
+        require(msg.value >= 1E17); //Minimal purchase is 0.1 ETH
         require(weiInFiat > 0);
 
         if (crowdsaleState == State.PRIVATE) {
@@ -287,12 +285,11 @@ contract Crowdsale is UsingFiatPrice {
 
         uint256 receivedWei = msg.value;
         uint256 fiatAmount = receivedWei.div(weiInFiat);
-        //Fiat equivalent of received wei is bigger than one integral unit of fiat currency
-        require(fiatAmount >= 10 ** fiatDecimals);
         uint256 tokensBought;
         uint256 stagePriceInFiatFracture;
         uint256 change;
         uint256 realReceivedWei;
+
         if (crowdsaleState == State.PRIVATE) {
             stagePriceInFiatFracture = privatePriceInFiatFracture;
         } else if (crowdsaleState == State.PRE_ICO) {
@@ -371,6 +368,7 @@ contract Crowdsale is UsingFiatPrice {
             //Crowdsale has finished. Set state to FINISHED
             StateHasChanged(State.ICO, State.FINISHED);
             crowdsaleState = State.FINISHED;
+            reserveFreezeTimestamp = now;
         }
     }
 
@@ -428,7 +426,8 @@ contract Crowdsale is UsingFiatPrice {
      * @dev Sends frozen reserve to receiver if 12 month has passed since freezing
      * @param _receiver Address of the frozen reserve receiver
      */
-    function retrieveFrozenReserve(address _receiver) public onlyOwner nonReentrant {
+    function receiveFrozenReserve(address _receiver) public onlyOwner nonReentrant {
+        require(crowdsaleState == State.FINISHED);
         require(now >= reserveFreezeTimestamp + freezePeriod);
         require(_receiver != address(0));
 
