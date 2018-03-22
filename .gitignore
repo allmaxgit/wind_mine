@@ -35,6 +35,7 @@
 ehthumbs.db
 Thumbs.db
 build/
+contracts/
 src/contracts/
 vendor/
 _vendor-*
