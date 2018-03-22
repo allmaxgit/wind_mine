@@ -6,12 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"time"
-
-	uErr "WindToken/errors"
-	uCrypto "WindToken/crypto"
-	"WindToken/gocontracts"
-	"WindToken/configs"
-	"WindToken/utils"
+	"math"
 
 	"golang.org/x/net/context"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -20,6 +15,12 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/core"
+
+	uErr "WindToken/errors"
+	uCrypto "WindToken/crypto"
+	"WindToken/gocontracts"
+	"WindToken/configs"
+	"WindToken/utils"
 )
 
 var (
@@ -118,7 +119,7 @@ func GetTokenPrice() (err error) {
 // ConvertBTCToTokens converts BTC to ICO tokens.
 func ConvertBTCToTokens(btcValue float64) (*big.Int) {
 	tokens := new(big.Int)
-	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100)
+	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100 * math.Pow10(18))
 	inEuroCents.Int(tokens)
 	tokens.Quo(tokens, euroCents)
 
