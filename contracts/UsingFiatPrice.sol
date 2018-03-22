@@ -1,4 +1,4 @@
-pragma solidity 0.4.21;
+pragma solidity ^0.4.18;
 
 import './Ownable.sol';
 
@@ -58,7 +58,7 @@ contract UsingFiatPrice is Ownable {
      */
     function updateWeiInFiat(uint256 _weiInFiat) external onlyOwner {
         require(_weiInFiat > 0);
-        emit RateUpdated(weiInFiat, _weiInFiat);
+        RateUpdated(weiInFiat, _weiInFiat);
         weiInFiat = _weiInFiat;
         lastUpdated = now;
     }
