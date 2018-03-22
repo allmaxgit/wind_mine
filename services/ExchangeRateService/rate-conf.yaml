@@ -1,7 +1,7 @@
 # This is example configuration file for ExchangeRateService
 
 # Infura service connection token
-infura_token: w1ZBFkHN8LXVxxKmDZW9
+infura_token: 1FXGefsSL6IqcH6Zj5Gc
 
 # Ethereum network id
 # 1 - MAIN net
@@ -12,10 +12,10 @@ infura_token: w1ZBFkHN8LXVxxKmDZW9
 network_id: 2
 
 # WindToken crowdsale contract address in the network, specified by network_id
-contract_address: 0x9ee9c4afe696e51535428c64f1b18231a1d63443
+contract_address: 0x5717daabccf1bac87c147e69412fd2300f19b2a2
 
 # Account private key for signing TXs in network, specified by network_id
-private_key: 093afb31f3bff9edb790580c27a81040dce8a1fef0053a61f30313cd53686dad
+private_key: 26f12d523ed75ebb5c0f3245d1d8aa5a6f7ffae8a1edfbe8a17b1fd71ec96568
 
 # How many minutes service should wait between updates of exchange rate
 update_rate: 60
