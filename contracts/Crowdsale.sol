@@ -166,6 +166,8 @@ contract Crowdsale is UsingFiatPrice {
      */
     bool public icoFundsWithdrawn = false;
 
+    bool[4] public withdrawnState;
+
     /**
      * @title wallet
      * @dev Beneficiary wallet address
@@ -245,7 +247,7 @@ contract Crowdsale is UsingFiatPrice {
      * @param _wallet Where withdrawn funds were sent
      * @param _amount How much wei were sent
      */
-    event FundsWithdrawn(address _wallet, uint256 _amount);
+    event FundsWithdrawn(address _wallet, uint256 _amount, uint256 _stage);
 
     /**
      * @dev This event is raised when owner changes beneficiary wallet
@@ -359,6 +361,9 @@ contract Crowdsale is UsingFiatPrice {
         buyTokens(msg.sender);
     }
 
+    event TestUint(uint _value);
+    event TestUint2(uint _value1, uint _value2);
+
     /**
      * @dev Function for handling received ETH and sending tokens to sender
      * @param _sender Address of funds sender
@@ -424,6 +429,7 @@ contract Crowdsale is UsingFiatPrice {
         tokensBought = tokensBought.mul(10 ** token.decimals());
         tokensOrdered[_sender] = tokensOrdered[_sender].add(tokensBought);
 
+        TestUint2(msg.value, realReceivedWei);
         TokensAreOrdered(_sender, tokensBought, weiInFiat);
     }
 
@@ -650,23 +656,26 @@ contract Crowdsale is UsingFiatPrice {
      */
     function withdraw() public onlyOwner nonReentrant {
         checkState();
-        require(crowdsaleState != State.NOT_STARTED);
+        uint test = uint(crowdsaleState);
+        TestUint(test);
+        require(crowdsaleState > State.NOT_STARTED);
+        require(!withdrawnState[uint(crowdsaleState).sub(1)]);
         // Private Sale funds can be withdrawn only when state is Pre-ICO, ICO or Finished and funds haven't been withdrawn before
-        if (crowdsaleState != State.PRIVATE && !privateSaleFundsWithdrawn) {
-            privateSaleFundsWithdrawn = true;
-            FundsWithdrawn(wallet, privateSaleWeiRaised);
+        if (crowdsaleState > State.PRIVATE && !withdrawnState[uint(State.PRIVATE)]) {
+            withdrawnState[uint(State.PRIVATE)] = true;
+            FundsWithdrawn(wallet, privateSaleWeiRaised, uint(State.PRIVATE));
             wallet.transfer(privateSaleWeiRaised);
         }
         // Pre-ICO funds can be withdrawn only when state is ICO or Finished and funds haven't been withdrawn before
-        if ((crowdsaleState == State.ICO || crowdsaleState == State.FINISHED) && !preIcoFundsWithdrawn) {
-            preIcoFundsWithdrawn = true;
-            FundsWithdrawn(wallet, preIcoWeiRaised);
+        if (crowdsaleState > State.PRE_ICO && !withdrawnState[uint(State.PRE_ICO)]) {
+            withdrawnState[uint(State.PRE_ICO)] = true;
+            FundsWithdrawn(wallet, preIcoWeiRaised, uint(State.PRE_ICO));
             wallet.transfer(preIcoWeiRaised);
         }
         // ICO funds can be withdrawn only when state is Finished and funds haven't been withdrawn before
-        if (crowdsaleState == State.FINISHED && !icoFundsWithdrawn) {
-            icoFundsWithdrawn = true;
-            FundsWithdrawn(wallet, icoWeiRaised);
+        if (crowdsaleState > State.ICO && !withdrawnState[uint(State.ICO)]) {
+            withdrawnState[uint(State.ICO)] = true;
+            FundsWithdrawn(wallet, icoWeiRaised, uint(State.ICO));
             wallet.transfer(icoWeiRaised);
         }
     }
