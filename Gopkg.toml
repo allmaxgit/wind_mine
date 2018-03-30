@@ -50,8 +50,8 @@
   source = "github.com/btcsuite/btcd"
 
 [[constraint]]
-  name = "github.com/btcsuite/btcd"
-  version = "6.10.0"
+  name = "github.com/gorilla/handlers"
+  source = "github.com/gorilla/handlers"
 
 [prune]
   go-tests = true

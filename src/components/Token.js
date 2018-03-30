@@ -34,7 +34,7 @@ class Token extends Component {
         const { owner, totalSupply } = this.state;
 
         return (
-            <Row style={{ marginTop: 50 }}>
+            <Row>
                 <Col>
                     <Row><h3>Token Info</h3></Row>
                     <Row>Address: {address}</Row>

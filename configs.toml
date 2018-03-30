@@ -2,11 +2,30 @@
     logOutPath = "./out/out.log"
 
 [server]
-    tcpPort = 8080
+    gRPCPort = 9092
+    restPort = 9091
 
 [crypto]
     # BTC
-    btcAddress = "1NS4gbx1G2D5rc9PnvVsPys12nKxGiQg72"
+    btcAddress = "n2mspPYhrcYAQAmy3Ud2fGCUynqJMUAKGD" # Wallet address.
+    btcTestnet = true
+
+    # ETH
+    # Ethereum network id
+      # 1 - MAIN net
+      # 2 - ROPSTEN net
+      # 3 - RINKEBY net
+      # 4 - KOVAN net
+      # 5 - INFURANET net
+    ethNetworkId = 2
+    infuraToken = "1FXGefsSL6IqcH6Zj5Gc"
+
+    # Contract
+    crowdsaleAddress = "0x5717daabccf1bac87c147e69412fd2300f19b2a2"
+    ownerPrivateKey = "26f12d523ed75ebb5c0f3245d1d8aa5a6f7ffae8a1edfbe8a17b1fd71ec96568"
+    ownerAddress = "0xA4F0E461B63FfFED6DfF7b72C3823717C694201b" # Important! Must be associated with ownerPrivateKey.
+    gasPrice = 3000000000 # Wei.
+    gasLimit = 4700000
 
 [services]
     btcServicePort = 8082
@@ -23,5 +42,5 @@
         host = "127.0.0.1"
         port = 5432
         name = "prodDB"
-        user = "proUSER"
+        user = "prodUSER"
         password = "prodPassword"

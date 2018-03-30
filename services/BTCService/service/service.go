@@ -3,12 +3,10 @@ package service
 import (
 	"fmt"
 	"net"
-	"os"
 	"bufio"
 	"io"
 	"bytes"
 	"encoding/gob"
-	"log"
 
 	uErr "WindToken/errors"
 	"WindToken/types"
@@ -19,10 +17,7 @@ import (
 // StartTCPServer starts TCP listening on certain port.
 func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil {
-		fmt.Println("ERROR", err)
-		os.Exit(1)
-	}
+	if err != nil { return }
 	defer l.Close()
 
 	for {
@@ -32,23 +27,18 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			continue
 		}
 
-		if btcWatcher.OnNewValue == nil {
-			btcWatcher.OnNewValue = func(value float64, from string) {
-				var message bytes.Buffer
-				enc := gob.NewEncoder(&message)
-				enc.Encode(types.BTCServiceResp{
-					Type: messageTypes.VALUE_RECEIVED,
-					Value: value,
-					From: from,
-				})
+		btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
+			var message bytes.Buffer
+			enc := gob.NewEncoder(&message)
+			enc.Encode(types.BTCServiceResp{
+				Type: messageTypes.VALUE_RECEIVED,
+				Value: value,
+				From: from,
+				TXHash: txHash,
+			})
 
-				// TODO: Remove log
-				log.Println("------------ amount", value, "from:", from)
-
-				_, err = conn.Write(append(message.Bytes(), '\n'))
-				if err != nil { uErr.Fatal(err, "failed to send response") }
-
-			}
+			_, err = conn.Write(append(message.Bytes(), '\n'))
+			if err != nil { uErr.Fatal(err, "failed to send response") }
 		}
 
 		go handleConnection(conn,  btcWatcher)
@@ -66,8 +56,9 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 			uErr.LogError(err, "filed to read message")
 		}
 
-		r := bytes.NewReader(line)
 		var message types.BTCServiceReq
+
+		r := bytes.NewReader(line)
 		dec := gob.NewDecoder(r)
 		err = dec.Decode(&message)
 		if err != nil {
@@ -85,7 +76,5 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 		//	uErr.LogError(err, "filed to handle message with type:", message.Type)
 		//	continue
 		//}
-
-		fmt.Println(message, line)
 	}
 }

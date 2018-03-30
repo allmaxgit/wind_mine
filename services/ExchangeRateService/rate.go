@@ -8,12 +8,16 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"WindToken/constants"
+	"sync"
 )
 
 //ExchangeRateProvider describes service, which provides API for getting cryptocurrency to fiat currency exchange rate
 type ExchangeRateProvider struct {
-	Name string
-	URL  string
+	Name   string
+	ETHURL string
+	BTCURL string
 }
 
 //CryptonatorTicker is struct, which describes Cryptonator exchange ticker with information about currency price and 24h trading volume
@@ -33,28 +37,46 @@ type CryptonatorResponse struct {
 	Error     string            `json:"error"`
 }
 
+type Rates struct {
+	mux *sync.Mutex
+
+	ETH float64
+	BTC float64
+}
+
 var (
-	RateProviders = [3]*ExchangeRateProvider{
-		{"CryptoCompare", "https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms="},
-		{"Cryptonator", "https://api.cryptonator.com/api/ticker/eth-"},
-		{"CoinMarketCap", "https://api.coinmarketcap.com/v1/ticker/ethereum/?convert="},
-	}
+	currentRates = Rates{&sync.Mutex{}, 0, 0}
+
+	RateProviders = [3]*ExchangeRateProvider{{
+		"CryptoCompare",
+		"https://min-api.cryptocompare.com/data/price?fsym=ETH&tsyms=",
+		"https://min-api.cryptocompare.com/data/price?fsym=BTC&tsyms=",
+	}, {
+		"Cryptonator",
+		"https://api.cryptonator.com/api/ticker/eth-",
+		"https://api.cryptonator.com/api/ticker/btc-",
+	}, {
+		"CoinMarketCap",
+		"https://api.coinmarketcap.com/v1/ticker/ethereum/?convert=",
+		"https://api.coinmarketcap.com/v1/ticker/bitcoin/?convert=",
+	}}
 )
 
-//GetAverageRate performs requests to CryptoCompare, Cryptonator and CoinMarketCap for ETH/symbol exchange rate and returns average rate
-func GetAverageRate(symbol string, c *Config) float64 {
+// GetAverageRate performs requests to CryptoCompare, Cryptonator and CoinMarketCap
+// for (ETH|BTC)/symbol exchange rate and returns average rate.
+func GetAverageRate(forCurrency uint8, symbol string, c *Config) float64 {
 	rates := make(chan float64, 3)
 
 	go func() {
-		rates <- GetCryptoCompareRate(symbol, c)
+		rates <- GetCryptoCompareRate(forCurrency, symbol, c)
 	}()
 
 	go func() {
-		rates <- GetCryptonatorRate(symbol, c)
+		rates <- GetCryptonatorRate(forCurrency, symbol, c)
 	}()
 
 	go func() {
-		rates <- GetCoinMarketCapRate(symbol, c)
+		rates <- GetCoinMarketCapRate(forCurrency, symbol, c)
 	}()
 
 	count := 0
@@ -75,16 +97,43 @@ func GetAverageRate(symbol string, c *Config) float64 {
 	if validCount == 0 {
 		return -math.MaxFloat64
 	}
+
 	return sum / validCount
 }
 
+func SetRate(forCurrency uint8, rate float64) {
+	currentRates.mux.Lock()
+	defer currentRates.mux.Unlock()
+
+	if forCurrency == constants.ETH {
+		currentRates.ETH = rate
+	} else {
+		currentRates.BTC = rate
+	}
+}
+
+func GetETHRate() float64 {
+	return currentRates.ETH
+}
+
+func GetBTCRate() float64 {
+	return currentRates.BTC
+}
+
+
 //GetCryptoCompareRate performs GET request to CryptoCompare and returns ETH/symbol exchange rate
-func GetCryptoCompareRate(symbol string, conf *Config) float64 {
+func GetCryptoCompareRate(forCurrency uint8, symbol string, conf *Config) float64 {
 	rate := -math.MaxFloat64
 	if conf == nil {
 		return rate
 	}
-	fullUrl := RateProviders[0].URL + symbol
+
+	var fullUrl string
+	if forCurrency == constants.ETH {
+		fullUrl = RateProviders[0].ETHURL + symbol
+	} else {
+		fullUrl = RateProviders[0].BTCURL + symbol
+	}
 
 	conf.Logger.Println("Querying CryptoCompare for exchange rate...")
 
@@ -124,12 +173,18 @@ func GetCryptoCompareRate(symbol string, conf *Config) float64 {
 }
 
 //GetCryptonatorRate performs GET request to Cryptonator and returns ETH/symbol exchange rate
-func GetCryptonatorRate(symbol string, conf *Config) float64 {
+func GetCryptonatorRate(forCurrency uint8, symbol string, conf *Config) float64 {
 	rate := -math.MaxFloat64
 	if conf == nil {
 		return rate
 	}
-	fullUrl := RateProviders[1].URL + strings.ToLower(symbol)
+
+	var fullUrl string
+	if forCurrency == constants.ETH {
+		fullUrl = RateProviders[1].ETHURL + strings.ToLower(symbol)
+	} else {
+		fullUrl = RateProviders[1].BTCURL + strings.ToLower(symbol)
+	}
 
 	conf.Logger.Println("Querying Cryptonator for exchange rate...")
 
@@ -171,12 +226,19 @@ func GetCryptonatorRate(symbol string, conf *Config) float64 {
 }
 
 //GetCoinMarketCapRate performs GET request to CoinMarketCap and returns ETH/symbol exchange rate
-func GetCoinMarketCapRate(symbol string, conf *Config) float64 {
+func GetCoinMarketCapRate(forCurrency uint8, symbol string, conf *Config) float64 {
 	rate := -math.MaxFloat64
 	if conf == nil {
 		return rate
 	}
-	fullUrl := RateProviders[2].URL + symbol
+
+	var fullUrl string
+	if forCurrency == constants.ETH {
+		fullUrl = RateProviders[2].ETHURL + symbol
+	} else {
+		fullUrl = RateProviders[2].BTCURL + symbol
+	}
+
 	responseField := "price_" + strings.ToLower(symbol)
 
 	conf.Logger.Println("Querying CoinMarketCap for exchange rate...")

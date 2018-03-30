@@ -2,6 +2,7 @@ package configs
 
 import (
 	"github.com/BurntSushi/toml"
+	"math/big"
 )
 
 type Configs struct {
@@ -13,16 +14,30 @@ type Configs struct {
 }
 
 type Common struct {
-	Dev         bool
-	LogsOutPath string
+	Dev        bool
+	LogOutPath string
 }
 
 type Server struct {
-	TCPPort uint `toml:"tcpPort"`
+	GRPCPort uint `toml:"gRPCPort"`
+	RESTPort uint `toml:"restPort"`
 }
 
 type Crypto struct {
-	BTCAddr string `toml:"btcAddress"`
+	// BTC
+	BTCAddr          string `toml:"btcAddress"`
+	BTCTestnet       bool   `toml:"btcTestnet"`
+
+	// ETH
+	ETHNetworkId     int `toml:"ethNetworkId"`
+	InfuraToken      string
+
+	// Contract
+	CrowdsaleAddress string
+	OwnerPrivateKey  string
+	OwnerAddress     string
+	GasPrice         big.Int
+	GasLimit         uint64
 }
 
 type Services struct {
@@ -48,6 +63,6 @@ func ParseConfigs(confPath string) (*Configs, error) {
 	return &configs, nil
 }
 
-// GetConfigs return configs.
-// You can get it from any place
-// func GetConfigs() *Configs { return &configs }
+ //GetConfigs return configs.
+ //You can get it from any place
+ func GetConfigs() *Configs { return &configs }

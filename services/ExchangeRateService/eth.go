@@ -5,59 +5,37 @@ import (
 	"math"
 	"math/big"
 
+	"WindToken/utils"
+
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"golang.org/x/net/context"
 )
 
-const (
-	//MAINNET Infura main network id
-	MAINNET = iota + 1
-	//ROPSTEN Infura Ropsten network id
-	ROPSTEN
-	//RINKEBY Infura Rinkeby network id
-	RINKEBY
-	//KOVAN Infura Kovan network id
-	KOVAN
-	//INFURANET Infuranet network id
-	INFURANET
-)
-
+// ConnectToEthereumNode connects to ETH provider.
 func ConnectToEthereumNode(conf *Config) *ethclient.Client {
 	if conf == nil {
 		return nil
 	}
-	var infuraNode string
-	switch conf.NetworkId {
-	case MAINNET:
-		infuraNode = "https://mainnet.infura.io/"
-	case ROPSTEN:
-		infuraNode = "https://ropsten.infura.io/"
-	case RINKEBY:
-		infuraNode = "https://rinkeby.infura.io/"
-	case KOVAN:
-		infuraNode = "https://kovan.infura.io/"
-	case INFURANET:
-		infuraNode = "https://infuranet.infura.io/"
-	default:
-		infuraNode = "https://rinkeby.infura.io/"
-	}
-	infuraNode += conf.InfuraToken
 
-	client, err := ethclient.Dial(infuraNode)
+	providerURL := utils.GetInfuraProviderUrl(conf.NetworkId, conf.InfuraToken)
+
+	client, err := ethclient.Dial(providerURL)
 	if err != nil {
-		fmt.Println(err.Error())
+		fmt.Println(err.Error()) // FIXME
 		return nil
 	}
 
 	return client
 }
 
+// GetContractSession creates UsingFiatPrice session.
 func GetContractSession(conf *Config) *UsingFiatPriceSession {
 	if conf == nil {
 		return nil
 	}
+
 	contract, err := NewUsingFiatPrice(conf.Contract, conf.EthConnection)
 	if err != nil {
 		conf.Logger.Println("Failed to create session: " + err.Error())
@@ -77,24 +55,27 @@ func GetContractSession(conf *Config) *UsingFiatPriceSession {
 			Value:    conf.Transactor.Value,
 		},
 	}
+
 	return session
 }
 
+// GetReceipt waiting for transaction and returns result.
 func GetReceipt(tx *types.Transaction, conf *Config) *types.Receipt {
 	if conf == nil {
 		return nil
 	}
-	//ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
-	//defer cancel()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Duration(conf.UpdateRate)*time.Minute)
+	// defer cancel()
 	receipt, err := bind.WaitMined(context.Background(), conf.EthConnection, tx)
 	if err != nil {
 		conf.Logger.Println("WaitMined error: " + err.Error())
 		return nil
 	}
+
 	return receipt
 }
 
-//GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process
+// GetWeiInFiatUnit calculates how much wei one fiat unit is worth. This function rounds floats to `precision` in the process.
 func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 	fiatUnitsInEther = round(fiatUnitsInEther, precision)
 
@@ -109,8 +90,8 @@ func GetWeiInFiatUnit(fiatUnitsInEther float64, precision int) *big.Int {
 	return weiInFiatUnit
 }
 
-//UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
-//and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed
+// UpdateExchangeRate updates `weiInFiat` field in the contract, specified in the config, using client and transactor from config,
+// and returns value, which was passed as parameter to this function, if the op was successful or nil if op failed.
 func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 	if weiInFiatUnit == nil || c == nil {
 		return nil
@@ -147,6 +128,7 @@ func UpdateExchangeRate(weiInFiatUnit *big.Int, c *Config) *big.Int {
 		return nil
 	}
 	conf.Logger.Println("Updated weiInFiat with value", fiatInWei.String())
+
 	return weiInFiatUnit
 }
 
@@ -167,5 +149,6 @@ func round(x float64, prec int) float64 {
 func roundBigFloat(x *big.Float, prec int) *big.Float {
 	fl, _ := x.Float64()
 	x.SetFloat64(round(fl, 2))
+
 	return x
 }

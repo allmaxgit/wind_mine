@@ -8,9 +8,11 @@ import (
 
 	uErr "WindToken/errors"
 	"WindToken/services/BTCService/store"
+	"WindToken/services/BTCService/configs"
 
 	"github.com/btcsuite/btcd/rpcclient"
 	"github.com/btcsuite/btcd/chaincfg/chainhash"
+	"fmt"
 )
 
 type Watcher struct {
@@ -19,7 +21,7 @@ type Watcher struct {
 
 	ActiveWatcherId  uint8
 
-	OnNewValue       func(float64, string)
+	OnNewValue       func(float64, string, string)
 }
 
 const (
@@ -28,11 +30,11 @@ const (
 )
 
 // StartRPCConnection starts connection to node.
-func StartRPCConnection() (watcher *Watcher, err error) {
+func StartRPCConnection(conf configs.Bitcoin) (watcher *Watcher, err error) {
 	connCfg := &rpcclient.ConnConfig{
-		Host:         "162.213.252.104:8332",
-		User:         "bitcoin",
-		Pass:         "local321",
+		Host:         conf.RPCHost,
+		User:         conf.User,
+		Pass:         conf.Password,
 		HTTPPostMode: true,
 		DisableTLS:   true,
 	}
@@ -69,6 +71,7 @@ func (w *Watcher) CheckActiveWatcherIdChanged(ownerId uint8) bool {
 
 // StartWatchingAddress handles error from WatchAddress.
 func (w *Watcher) StartWatchingAddress(addr string) {
+	log.Println("Start watching address " + addr + "...")
 	err := w.WatchAddress(addr)
 	if err != nil {
 		uErr.Fatal(err, "failed to watch address")
@@ -78,7 +81,7 @@ func (w *Watcher) StartWatchingAddress(addr string) {
 // WatchAddress adds listener for address.
 func (w *Watcher) WatchAddress(addr string) error {
 	if addr == "" {
-		return errors.New(uErr.ErrorFindAddress)
+		return errors.New(uErr.ErrFindAddress)
 	}
 
 	var lastHandledBlock int64
@@ -96,6 +99,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 		bCount, err := w.client.GetBlockCount()
 		if err != nil { return err }
 		log.Println("blocks count:", bCount)
+		log.Println("last handled block:", lastHandledBlock)
 
 		// If lastHandledBlock backward in time.
 		backwardInTime := false
@@ -103,12 +107,13 @@ func (w *Watcher) WatchAddress(addr string) error {
 			bCount = lastHandledBlock + 1
 			backwardInTime = true
 		} else if bCount == lastHandledBlock {
+			sleep()
 			continue
 		}
 
 		lastHash, err := w.client.GetBlockHash(bCount)
 		if err != nil { return err }
-		log.Println("last block", lastHash)
+		//log.Println("last block", lastHash)
 
 		lastBlock, err := w.client.GetBlockVerbose(lastHash)
 		if err != nil { return err }
@@ -127,7 +132,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 			// Filter addresses.
 			for _, vout := range tx.Vout {
 				for _, fAddr := range vout.ScriptPubKey.Addresses {
-					log.Println("Address:", fAddr)
+					//log.Println("Address:", fAddr)
 					if fAddr == addr { // TODO: Remove redundant logs
 						log.Println("------------------")
 						log.Println("Transaction for", addr)
@@ -149,7 +154,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 						ownerOut := ownerTx.Vout[ownerTxOutIndex]
 						ownerAddr := ownerOut.ScriptPubKey.Addresses[0]
 						if w.OnNewValue != nil {
-							w.OnNewValue(vout.Value, ownerAddr)
+							w.OnNewValue(vout.Value, ownerAddr, tx.Hash)
 						}
 
 						log.Println("tx owner:", ownerAddr, "tx value", vout.Value)
@@ -160,13 +165,18 @@ func (w *Watcher) WatchAddress(addr string) error {
 
 		// Save last handled block.
 		store.Set(LAST_BLOCK_KEY, bCount)
-		lastHandledBlock++
+		lastHandledBlock = bCount
 
 		// Sleep for 1 minute.
 		if !backwardInTime {
-			time.Sleep(1 * time.Minute)
+			sleep()
 		}
 	}
 
 	return nil
+}
+
+func sleep() {
+	fmt.Println("sleeping for 2 minutes...")
+	time.Sleep(2 * time.Minute)
 }

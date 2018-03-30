@@ -35,9 +35,14 @@
 ehthumbs.db
 Thumbs.db
 build/
+contracts/
 src/contracts/
 vendor/
 _vendor-*
 
 node_modules
 cmd/
+out/builds/
+WindToken
+services/BTCService/BTCService
+services/ExchangeRateService/ExchangeRateService

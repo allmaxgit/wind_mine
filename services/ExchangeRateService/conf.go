@@ -10,7 +10,6 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
-	"github.com/fsnotify/fsnotify"
 	"github.com/spf13/viper"
 )
 
@@ -30,13 +29,6 @@ type Config struct {
 var conf *Config
 
 func GetConfig() *Config {
-	viper.OnConfigChange(func(in fsnotify.Event) {
-		if in.Op == fsnotify.Write {
-			fmt.Println("Config file changed, reloading configuration...")
-			conf = loadConfig()
-		}
-	})
-
 	if conf == nil {
 		conf = loadConfig()
 	}
