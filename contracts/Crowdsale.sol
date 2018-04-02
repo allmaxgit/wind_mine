@@ -166,6 +166,8 @@ contract Crowdsale is UsingFiatPrice {
      */
     bool public icoFundsWithdrawn = false;
 
+    bool[4] public withdrawnState;
+
     /**
      * @title wallet
      * @dev Beneficiary wallet address
@@ -245,7 +247,7 @@ contract Crowdsale is UsingFiatPrice {
      * @param _wallet Where withdrawn funds were sent
      * @param _amount How much wei were sent
      */
-    event FundsWithdrawn(address _wallet, uint256 _amount);
+    event FundsWithdrawn(address _wallet, uint256 _amount, uint256 _stage);
 
     /**
      * @dev This event is raised when owner changes beneficiary wallet
@@ -452,24 +454,32 @@ contract Crowdsale is UsingFiatPrice {
             crowdsaleState = State.NOT_STARTED;
         } else if (now >= privateSaleStartDate && now < preIcoStartDate) {
             //Crowdsale is in Private Sale state. Set state to PRIVATE and update hard cap to private sale hard cap
-            StateHasChanged(State.NOT_STARTED, State.PRIVATE);
-            crowdsaleState = State.PRIVATE;
-            currentHardCap = privateSaleHardCap;
+            if (crowdsaleState != State.PRIVATE) {
+                StateHasChanged(State.NOT_STARTED, State.PRIVATE);
+                crowdsaleState = State.PRIVATE;
+                currentHardCap = privateSaleHardCap;
+            }
         } else if (now >= preIcoStartDate && now < icoStartDate) {
             //Crowdsale is in Pre-ICO state. Set state to PRE_ICO and update hard cap to Pre-ICO hard cap
-            StateHasChanged(State.PRIVATE, State.PRE_ICO);
-            crowdsaleState = State.PRE_ICO;
-            currentHardCap = preIcoHardCap;
+            if (crowdsaleState != State.PRE_ICO) {
+                StateHasChanged(State.PRIVATE, State.PRE_ICO);
+                crowdsaleState = State.PRE_ICO;
+                currentHardCap = preIcoHardCap;
+            }
         } else if (now >= icoStartDate && now < icoFinishDate) {
             //Crowdsale is in ICO state. Set state to ICO and update hard cap to ICO hard cap
-            StateHasChanged(State.PRE_ICO, State.ICO);
-            crowdsaleState = State.ICO;
-            currentHardCap = icoHardCap;
+            if (crowdsaleState != State.ICO) {
+                StateHasChanged(State.PRE_ICO, State.ICO);
+                crowdsaleState = State.ICO;
+                currentHardCap = icoHardCap;
+            }
         } else {
             //Crowdsale has finished. Set state to FINISHED
-            StateHasChanged(State.ICO, State.FINISHED);
-            crowdsaleState = State.FINISHED;
-            reserveFreezeTimestamp = now;
+            if (crowdsaleState != State.FINISHED) {
+                StateHasChanged(State.ICO, State.FINISHED);
+                crowdsaleState = State.FINISHED;
+                reserveFreezeTimestamp = now;
+            }
         }
     }
 
@@ -650,23 +660,24 @@ contract Crowdsale is UsingFiatPrice {
      */
     function withdraw() public onlyOwner nonReentrant {
         checkState();
-        require(crowdsaleState != State.NOT_STARTED);
+        require(crowdsaleState > State.NOT_STARTED);
+        require(!withdrawnState[uint(crowdsaleState).sub(1)]);
         // Private Sale funds can be withdrawn only when state is Pre-ICO, ICO or Finished and funds haven't been withdrawn before
-        if (crowdsaleState != State.PRIVATE && !privateSaleFundsWithdrawn) {
-            privateSaleFundsWithdrawn = true;
-            FundsWithdrawn(wallet, privateSaleWeiRaised);
+        if (crowdsaleState > State.PRIVATE && !withdrawnState[uint(State.PRIVATE)]) {
+            withdrawnState[uint(State.PRIVATE)] = true;
+            FundsWithdrawn(wallet, privateSaleWeiRaised, uint(State.PRIVATE));
             wallet.transfer(privateSaleWeiRaised);
         }
         // Pre-ICO funds can be withdrawn only when state is ICO or Finished and funds haven't been withdrawn before
-        if ((crowdsaleState == State.ICO || crowdsaleState == State.FINISHED) && !preIcoFundsWithdrawn) {
-            preIcoFundsWithdrawn = true;
-            FundsWithdrawn(wallet, preIcoWeiRaised);
+        if (crowdsaleState > State.PRE_ICO && !withdrawnState[uint(State.PRE_ICO)]) {
+            withdrawnState[uint(State.PRE_ICO)] = true;
+            FundsWithdrawn(wallet, preIcoWeiRaised, uint(State.PRE_ICO));
             wallet.transfer(preIcoWeiRaised);
         }
         // ICO funds can be withdrawn only when state is Finished and funds haven't been withdrawn before
-        if (crowdsaleState == State.FINISHED && !icoFundsWithdrawn) {
-            icoFundsWithdrawn = true;
-            FundsWithdrawn(wallet, icoWeiRaised);
+        if (crowdsaleState > State.ICO && !withdrawnState[uint(State.ICO)]) {
+            withdrawnState[uint(State.ICO)] = true;
+            FundsWithdrawn(wallet, icoWeiRaised, uint(State.ICO));
             wallet.transfer(icoWeiRaised);
         }
     }
