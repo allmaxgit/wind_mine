@@ -103,15 +103,15 @@ func sendTransaction(from *User, backend *backends.SimulatedBackend, to common.A
 func DeployContract(user *User,
 	backend *backends.SimulatedBackend,
 	privateSaleStart,
-	privateSaleDuration,
-	preIcoDuration,
-	icoDuration *big.Int,
+	preIcoStart,
+	icoStart,
+	icoFinish *big.Int,
 	wallet, foundersWallet common.Address,
 ) common.Address {
-	if user == nil || backend == nil || privateSaleStart == nil || privateSaleDuration == nil || preIcoDuration == nil || icoDuration == nil {
+	if user == nil || backend == nil || privateSaleStart == nil || preIcoStart == nil || icoStart == nil || icoFinish == nil {
 		panic("nil parameters")
 	}
-	addr, tx, _, err := DeployCrowdsale(user.Opts, backend, privateSaleStart, privateSaleDuration, preIcoDuration, icoDuration, wallet, foundersWallet)
+	addr, tx, _, err := DeployCrowdsale(user.Opts, backend, privateSaleStart, preIcoStart, icoStart, icoFinish, wallet, foundersWallet)
 	if err != nil {
 		panic("failed to deploy crowdsale")
 	}

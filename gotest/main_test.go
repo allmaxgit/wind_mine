@@ -16,7 +16,11 @@ func TestDeploy(t *testing.T) {
 		if sim == nil || user == nil {
 			t.Fatal("Simulator should have started")
 		}
-		addr := DeployContract(user[0], sim, big.NewInt(time.Now().Unix()), big.NewInt(stageDuration), big.NewInt(stageDuration), big.NewInt(stageDuration), user[0].Opts.From, user[0].Opts.From)
+		start := time.Now().Unix()
+		preIco := start + stageDuration
+		ico := preIco + stageDuration
+		icoFinish := ico + stageDuration
+		addr := DeployContract(user[0], sim, big.NewInt(start), big.NewInt(preIco), big.NewInt(ico), big.NewInt(icoFinish), user[0].Opts.From, user[0].Opts.From)
 		session := GetCrowdsaleSession(user[0], sim, addr)
 		if session == nil {
 			t.Fatal("Should successfuly get contract session")
@@ -28,7 +32,11 @@ func TestDeploy(t *testing.T) {
 		if sim == nil || user == nil {
 			t.Fatal("Simulator should have started")
 		}
-		addr := DeployContract(user[0], sim, big.NewInt(time.Now().Unix()+2), big.NewInt(stageDuration), big.NewInt(stageDuration), big.NewInt(stageDuration), user[0].Opts.From, user[0].Opts.From)
+		start := time.Now().Unix()
+		preIco := start + stageDuration
+		ico := preIco + stageDuration
+		icoFinish := ico + stageDuration
+		addr := DeployContract(user[0], sim, big.NewInt(start), big.NewInt(preIco), big.NewInt(ico), big.NewInt(icoFinish), user[0].Opts.From, user[0].Opts.From)
 		session := GetCrowdsaleSession(user[0], sim, addr)
 		if session == nil {
 			t.Fatal("Should successfuly get contract session")
@@ -122,7 +130,11 @@ func TestOwnership(t *testing.T) {
 	if sim == nil || user == nil {
 		t.Fatal("Simulator should have started")
 	}
-	addr := DeployContract(user[0], sim, big.NewInt(time.Now().Unix()+2), big.NewInt(stageDuration), big.NewInt(stageDuration), big.NewInt(stageDuration), user[0].Opts.From, user[0].Opts.From)
+	start := time.Now().Unix() + 2
+	preIco := start + stageDuration
+	ico := preIco + stageDuration
+	icoFinish := ico + stageDuration
+	addr := DeployContract(user[0], sim, big.NewInt(start), big.NewInt(preIco), big.NewInt(ico), big.NewInt(icoFinish), user[0].Opts.From, user[0].Opts.From)
 	//owner session
 	session1 := GetCrowdsaleSession(user[0], sim, addr)
 	if session1 == nil {
@@ -175,15 +187,6 @@ func TestOwnership(t *testing.T) {
 			t.Fatal("TX should fail because of onlyOwner modifier")
 		}
 
-		tx, err = session2.SetNewStartDate(big.NewInt(123456789))
-		if err != nil {
-			t.Fatal("Failed to send TX SetNewStartDate")
-		}
-		receipt = GetReceipt(tx, sim)
-		if receipt.Status != 0 {
-			t.Fatal("TX should fail because of onlyOwner modifier")
-		}
-
 		tx, err = session2.ManualReserve(user[1].Opts.From, big.NewInt(1000))
 		if err != nil {
 			t.Fatal("Failed to send TX ManualReserve")
@@ -229,15 +232,6 @@ func TestOwnership(t *testing.T) {
 		tx, err = session1.SetWallet(user[1].Opts.From)
 		if err != nil {
 			t.Fatal("Failed to send TX SetWallet")
-		}
-		receipt = GetReceipt(tx, sim)
-		if receipt.Status != 1 {
-			t.Fatal("TX should not fail")
-		}
-
-		tx, err = session1.SetNewStartDate(big.NewInt(123456789))
-		if err != nil {
-			t.Fatal("Failed to send TX SetNewStartDate")
 		}
 		receipt = GetReceipt(tx, sim)
 		if receipt.Status != 1 {

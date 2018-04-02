@@ -1,35 +1,35 @@
 package eth
 
 import (
+	"errors"
 	"fmt"
 	"log"
-	"errors"
+	"math"
 	"math/big"
 	"time"
-	"math"
 
-	"golang.org/x/net/context"
-	"github.com/ethereum/go-ethereum/core/types"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
-	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/ethclient"
+	"golang.org/x/net/context"
 
-	uErr "WindToken/errors"
-	uCrypto "WindToken/crypto"
-	"WindToken/gocontracts"
 	"WindToken/configs"
+	uCrypto "WindToken/crypto"
+	uErr "WindToken/errors"
+	"WindToken/gocontracts"
 	"WindToken/utils"
 )
 
 var (
-	client     *ethclient.Client
+	client *ethclient.Client
 
-	auth       *bind.TransactOpts
-	dAuth      *bind.TransactOpts
-	session    *token.CrowdsaleSession
-	euroCents  *big.Int
+	auth      *bind.TransactOpts
+	dAuth     *bind.TransactOpts
+	session   *gocontracts.CrowdsaleSession
+	euroCents *big.Int
 )
 
 // Dial connects to ETH provider create sessions for contracts.
@@ -37,7 +37,9 @@ func Dial(conf *configs.Crypto) (err error) {
 	providerURL := utils.GetInfuraProviderUrl(conf.ETHNetworkId, conf.InfuraToken)
 
 	client, _ = ethclient.Dial(providerURL)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	//gasPrice, err := client.SuggestGasPrice(context.TODO())
 	//if err != nil {
@@ -68,7 +70,9 @@ func Dial(conf *configs.Crypto) (err error) {
 // and sets it for TransactOpts.
 func UpdateGasLimit() (err error) {
 	gasLimit, err := getGasLimit()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	session.TransactOpts.GasLimit = gasLimit
 	return
@@ -81,11 +85,15 @@ func UpdateGasLimit() (err error) {
 func GetTokenPrice() (err error) {
 	fmt.Println("Getting token price...")
 	state, err := session.CrowdsaleState()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if state == 0 {
 		tx, err := session.CheckState()
-		if err != nil { return err }
+		if err != nil {
+			return err
+		}
 
 		receipt, err := getReceipt(tx, false)
 
@@ -117,7 +125,7 @@ func GetTokenPrice() (err error) {
 }
 
 // ConvertBTCToTokens converts BTC to ICO tokens.
-func ConvertBTCToTokens(btcValue float64) (*big.Int) {
+func ConvertBTCToTokens(btcValue float64) *big.Int {
 	tokens := new(big.Int)
 	inEuroCents := new(big.Float).SetFloat64(btcValue * uCrypto.GetBTCRate() * 100 * math.Pow10(8))
 	inEuroCents.Int(tokens)
@@ -157,12 +165,16 @@ func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err
 	addr := common.HexToAddress(addrStr)
 
 	tx, err := session.ManualReserve(addr, amount)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	log.Println("manualReserve tx:", tx.Hash().Hex())
 
 	receipt, err = getReceipt(tx, true)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if receipt.Status == 0 {
 		return nil, errors.New(uErr.ErrReceiptStatus)
@@ -171,9 +183,24 @@ func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err
 	return
 }
 
+//CheckIsKycPassed check in contract if address has passed KYC
+func CheckIsKycPassed(addrStr string) (bool, error) {
+	addr := common.HexToAddress(addrStr)
+
+	whiteListed, err := session.WhiteList(addr)
+	if err != nil {
+		log.Println("whiteList() error:", err)
+		return false, errors.New(uErr.ErrDataRetrieve)
+	}
+
+	return whiteListed, nil
+}
+
 func createAuth(key string, gasPrice *big.Int, gasLimit uint64) (auth *bind.TransactOpts, err error) {
 	privateKey, err := crypto.HexToECDSA(key)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	log.Println("GasPrice is:", gasPrice, "GasLimit is:", gasLimit)
 
@@ -183,12 +210,14 @@ func createAuth(key string, gasPrice *big.Int, gasLimit uint64) (auth *bind.Tran
 	return
 }
 
-func createCrowdsaleSession(contractAddr string) (*token.CrowdsaleSession, error) {
+func createCrowdsaleSession(contractAddr string) (*gocontracts.CrowdsaleSession, error) {
 	addr := common.HexToAddress(contractAddr)
-	contract, err := token.NewCrowdsale(addr, client)
-	if err != nil { return nil, err }
+	contract, err := gocontracts.NewCrowdsale(addr, client)
+	if err != nil {
+		return nil, err
+	}
 
-	session := &token.CrowdsaleSession{
+	session := &gocontracts.CrowdsaleSession{
 		Contract: contract,
 		CallOpts: bind.CallOpts{
 			Pending: true,
@@ -209,7 +238,9 @@ func createCrowdsaleSession(contractAddr string) (*token.CrowdsaleSession, error
 func prepareContracts(addrStr string) (err error) {
 	// Check contracts owner.
 	ownerAddress, err := session.Owner()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if addrStr != ownerAddress.Hex() {
 		return errors.New(uErr.ErrOwner)
@@ -217,7 +248,9 @@ func prepareContracts(addrStr string) (err error) {
 
 	// Check if contract not started or finished.
 	err = GetTokenPrice()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	// Prepare contracts.
 	err = prepareCrowdsale()
@@ -233,7 +266,7 @@ func prepareCrowdsale() (err error) {
 
 	if privateSaleHardCap.BitLen() == 0 {
 
-		err := utils.DoNTimeBeforeComplete(10, func (i int) (err error) {
+		err := utils.DoNTimeBeforeComplete(10, func(i int) (err error) {
 			fmt.Println("PrepareCrowdsale GasPrice:", session.TransactOpts.GasPrice) // TODO: Remove
 
 			_, err = prepareCrowdsaleSync()
@@ -283,7 +316,7 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 	var cancel context.CancelFunc
 
 	if useTimeout {
-		ctx, cancel = context.WithTimeout(ctxB, 60 * time.Minute)
+		ctx, cancel = context.WithTimeout(ctxB, 60*time.Minute)
 	} else {
 		ctx, cancel = context.WithCancel(ctxB)
 	}
@@ -302,12 +335,16 @@ func getReceipt(tx *types.Transaction, useTimeout bool) (receipt *types.Receipt,
 
 func prepareCrowdsaleSync() (receipt *types.Receipt, err error) {
 	tx, err := session.PrepareCrowdsale()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	log.Println("tx:", tx.Hash())
 
 	receipt, err = getReceipt(tx, true)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if receipt.Status == 0 {
 		return nil, errors.New(uErr.ErrReceiptStatus)
