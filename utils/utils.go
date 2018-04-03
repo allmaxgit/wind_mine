@@ -2,15 +2,15 @@ package utils
 
 import (
 	"log"
+	"math/big"
 	"os"
 	"os/signal"
-	"math/big"
 )
 
 var (
 	percents = new(big.Int).SetUint64(10)
-	oneH = new(big.Int).SetUint64(100)
-	gOne = new(big.Int).SetUint64(1)
+	oneH     = new(big.Int).SetUint64(100)
+	gOne     = new(big.Int).SetUint64(1)
 )
 
 // RecoverWatcher waiting for recover.

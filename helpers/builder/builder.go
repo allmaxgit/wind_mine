@@ -50,7 +50,7 @@ func buildPkg(confPath string, pathToPkg ...string) {
 		fmt.Println("building root...")
 		utils.RunCommand("go", "build", "-o", path.Join("out", "builds", mainPkgName, mainPkgName))
 
-		err := utils.CopyFile(confPath,  path.Join("out", "builds", mainPkgName, confFileName))
+		err := utils.CopyFile(confPath, path.Join("out", "builds", mainPkgName, confFileName))
 		if err != nil {
 			log.Fatalf("failed to copy config file (%s/%s): %s", mainPkgName, confFileName, err)
 		}
@@ -64,7 +64,7 @@ func buildPkg(confPath string, pathToPkg ...string) {
 		fmt.Printf("building %s...\n", file)
 		utils.RunCommand("go", "build", "-o", path.Join("out", "builds", file, file), pkgPath)
 
-		err := utils.CopyFile(confPath,  path.Join("out", "builds", file, confFileName))
+		err := utils.CopyFile(confPath, path.Join("out", "builds", file, confFileName))
 		if err != nil {
 			log.Fatalf("failed to copy config file (%s/%s): %s", file, confFileName, err)
 		}

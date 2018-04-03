@@ -120,7 +120,6 @@ func GetBTCRate() float64 {
 	return currentRates.BTC
 }
 
-
 //GetCryptoCompareRate performs GET request to CryptoCompare and returns ETH/symbol exchange rate
 func GetCryptoCompareRate(forCurrency uint8, symbol string, conf *Config) float64 {
 	rate := -math.MaxFloat64

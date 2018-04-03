@@ -1,16 +1,16 @@
 package crypto
 
 import (
-	"net"
-	"fmt"
 	"bufio"
-	"io"
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"io"
+	"net"
 
+	"WindToken/constants"
 	uErr "WindToken/errors"
 	"WindToken/types"
-	"WindToken/constants"
 	"sync"
 )
 
@@ -28,7 +28,9 @@ var (
 // Dial starts connection with ExchangeRateService via tcp.
 func Dial(port uint) (err error) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	response := bufio.NewReader(conn)
 	for {
@@ -52,13 +54,16 @@ func handleMessage(line []byte) {
 	r := bytes.NewReader(line)
 	dec := gob.NewDecoder(r)
 	err := dec.Decode(&message)
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	if message.FiatCurrency != "EUR" {
 		uErr.Fatal(nil, "actually supported EUR only")
 	}
 
 	rates.mux.Lock()
+	defer rates.mux.Unlock()
 	switch message.Currency {
 	case constants.ETH:
 		rates.ETH = message.Value
@@ -69,16 +74,18 @@ func handleMessage(line []byte) {
 	default:
 		break
 	}
-	rates.mux.Unlock()
 }
 
-// TODO: Might to use mutex here.
 // GetETHRate returns current ETH rate.
 func GetETHRate() float64 {
+	rates.mux.Lock()
+	defer rates.mux.Unlock()
 	return rates.ETH
 }
 
 // GetBTCRate returns current BTC rate.
 func GetBTCRate() float64 {
+	rates.mux.Lock()
+	defer rates.mux.Unlock()
 	return rates.BTC
 }

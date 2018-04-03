@@ -14,7 +14,6 @@ type Common struct {
 	Dev        bool
 	LogOutPath string
 	StorePath  string
-
 }
 
 type Server struct {
@@ -22,9 +21,10 @@ type Server struct {
 }
 
 type Bitcoin struct {
-	RPCHost  string `toml:"rpcHost"`
-	User     string
-	Password string
+	RPCHost    string `toml:"rpcHost"`
+	User       string
+	Password   string
+	PrivateKey string `toml:"private_key"`
 }
 
 var configs Configs
@@ -40,4 +40,4 @@ func ParseConfigs(confPath string) (*Configs, error) {
 
 // GetConfigs return configs.
 // You can get it from any place.
- func GetConfigs() *Configs { return &configs }
+func GetConfigs() *Configs { return &configs }

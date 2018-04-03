@@ -1,23 +1,26 @@
 package service
 
 import (
-	"fmt"
-	"net"
 	"bufio"
-	"io"
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"io"
+	"net"
 
-	uErr "WindToken/errors"
-	"WindToken/types"
 	"WindToken/constants/messageTypes"
+	uErr "WindToken/errors"
 	"WindToken/services/BTCService/btc"
+	"WindToken/types"
+	"log"
 )
 
 // StartTCPServer starts TCP listening on certain port.
 func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 	defer l.Close()
 
 	for {
@@ -31,29 +34,33 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			var message bytes.Buffer
 			enc := gob.NewEncoder(&message)
 			enc.Encode(types.BTCServiceResp{
-				Type: messageTypes.VALUE_RECEIVED,
-				Value: value,
-				From: from,
+				Type:   messageTypes.VALUE_RECEIVED,
+				Value:  value,
+				From:   from,
 				TXHash: txHash,
 			})
 
 			_, err = conn.Write(append(message.Bytes(), '\n'))
-			if err != nil { uErr.Fatal(err, "failed to send response") }
+			if err != nil {
+				uErr.Fatal(err, "failed to send response")
+			}
 		}
 
-		go handleConnection(conn,  btcWatcher)
+		go handleConnection(conn, btcWatcher)
 	}
 }
 
-func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
+func handleConnection(conn net.Conn, btcWatcher *btc.Watcher) {
 	defer conn.Close()
 
 	r := bufio.NewReader(conn)
 	for {
 		line, err := r.ReadBytes(byte('\n'))
 		if err != nil {
-			if err == io.EOF { break }
-			uErr.LogError(err, "filed to read message")
+			if err == io.EOF {
+				break
+			}
+			uErr.LogError(err, "failed to read message")
 		}
 
 		var message types.BTCServiceReq
@@ -61,20 +68,34 @@ func handleConnection(conn net.Conn,  btcWatcher *btc.Watcher) {
 		r := bytes.NewReader(line)
 		dec := gob.NewDecoder(r)
 		err = dec.Decode(&message)
-		if err != nil {
-			continue
-		}
+		if err == nil {
+			switch message.Type {
+			case messageTypes.WATCH_ADDRESS:
+				go btcWatcher.StartWatchingAddress(message.Address)
+				continue
+			case messageTypes.RETURN_REQUIRED:
+				go func() {
+					err := btcWatcher.ReturnBTC(message.To, message.ReceiveTXHash, message.Value)
+					if err != nil {
+						var returnMsg bytes.Buffer
+						enc := gob.NewEncoder(&returnMsg)
+						enc.Encode(types.BTCServiceResp{
+							Type:   messageTypes.RETURN_FAILED,
+							Value:  message.Value,
+							From:   message.To,
+							TXHash: message.ReceiveTXHash,
+						})
 
-		switch message.Type {
-		case messageTypes.WATCH_ADDRESS:
-			go btcWatcher.StartWatchingAddress(message.Address)
-		default:
-			continue
+						_, err = conn.Write(append(returnMsg.Bytes(), '\n'))
+						if err != nil {
+							log.Println("Failed to notify main service about failed BTC return")
+						}
+					}
+				}()
+				continue
+			default:
+				continue
+			}
 		}
-
-		//if err != nil {
-		//	uErr.LogError(err, "filed to handle message with type:", message.Type)
-		//	continue
-		//}
 	}
 }

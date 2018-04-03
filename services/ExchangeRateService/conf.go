@@ -14,6 +14,7 @@ import (
 )
 
 type Config struct {
+	Port          uint
 	Retries       int
 	NetworkId     int
 	GasLimit      uint64
@@ -48,6 +49,8 @@ func loadConfig() *Config {
 	}
 
 	c := &Config{}
+
+	c.Port = uint(viper.GetInt("tcp_port"))
 
 	c.InfuraToken = viper.GetString("infura_token")
 	c.NetworkId = viper.GetInt("network_id")

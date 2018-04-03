@@ -25,12 +25,12 @@ type Server struct {
 
 type Crypto struct {
 	// BTC
-	BTCAddr          string `toml:"btcAddress"`
-	BTCTestnet       bool   `toml:"btcTestnet"`
+	BTCAddr    string `toml:"btcAddress"`
+	BTCTestnet bool   `toml:"btcTestnet"`
 
 	// ETH
-	ETHNetworkId     int `toml:"ethNetworkId"`
-	InfuraToken      string
+	ETHNetworkId int `toml:"ethNetworkId"`
+	InfuraToken  string
 
 	// Contract
 	CrowdsaleAddress string
@@ -45,11 +45,11 @@ type Services struct {
 }
 
 type DB struct {
-	Host         string
-	Port         uint
-	Name         string
-	User         string
-	Password     string
+	Host     string
+	Port     uint
+	Name     string
+	User     string
+	Password string
 }
 
 var configs Configs
@@ -63,6 +63,6 @@ func ParseConfigs(confPath string) (*Configs, error) {
 	return &configs, nil
 }
 
- //GetConfigs return configs.
- //You can get it from any place
- func GetConfigs() *Configs { return &configs }
+//GetConfigs return configs.
+//You can get it from any place
+func GetConfigs() *Configs { return &configs }

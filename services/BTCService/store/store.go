@@ -1,9 +1,9 @@
 package store
 
 import (
+	"encoding/gob"
 	"fmt"
 	"os"
-	"encoding/gob"
 
 	"WindToken/services/BTCService/configs"
 
@@ -71,7 +71,9 @@ func getFromFile(storePath string) (map[string]cache.Item, error) {
 
 	fmt.Println("Getting cache from file:", storePath)
 	f, err := os.OpenFile(storePath, os.O_RDWR|os.O_CREATE, os.ModePerm)
-	if err != nil { return items, err }
+	if err != nil {
+		return items, err
+	}
 	defer f.Close()
 
 	decoder := gob.NewDecoder(f)

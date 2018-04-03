@@ -2,8 +2,11 @@ package types
 
 type (
 	BTCServiceReq struct {
-		Type    string
-		Address string
+		Type          string
+		Address       string
+		Value         float64
+		ReceiveTXHash string
+		To            string
 	}
 
 	BTCServiceResp struct {
@@ -19,4 +22,3 @@ type (
 		FiatCurrency string
 	}
 )
-

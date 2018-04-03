@@ -46,7 +46,7 @@ class BTCSupport extends Component {
 
     async isBTCAddress(address) {
         let WAValidator = require('wallet-address-validator');
-        return WAValidator.validate(address, 'BTC');
+        return WAValidator.validate(address, 'BTC', 'testnet'); //TODO remove when going live
     }
 
     async buttonStateChange(param, value, button, func) {
@@ -73,7 +73,7 @@ class BTCSupport extends Component {
                 header,
                 body: JSON.stringify({
                     ethAddress: ETHAddress,
-//                        btcAddress: BTCAddress
+                    btcAddress: BTCAddress
                 }),
             });
             const data = await resp.json();

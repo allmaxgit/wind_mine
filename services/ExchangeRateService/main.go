@@ -3,11 +3,11 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"os"
 	"time"
-	"fmt"
 
 	"WindToken/constants"
 )
@@ -33,10 +33,9 @@ func main() {
 	go watchBTCRate(conf, w)
 
 	// Start TCP Server.
-	fmt.Println("Launching TCP...")
-	// TODO: Take port from configs
-	if err := StartTCPServer(conf, 9090, w); err != nil {
-		fmt.Println("filed to start tcp server:", err.Error())
+	fmt.Println("Launching TCP server...")
+	if err := StartTCPServer(conf, w); err != nil {
+		fmt.Println("failed to start tcp server:", err.Error())
 	}
 }
 
@@ -50,7 +49,7 @@ func watchETHRate(conf *Config, w *Watcher) {
 			continue
 		}
 
-		conf.Logger.Println("Average ETH/" + conf.FiatSymbol + " exchange rate -", rate)
+		conf.Logger.Println("Average ETH/"+conf.FiatSymbol+" exchange rate -", rate)
 
 		SetRate(constants.ETH, rate)
 
@@ -61,7 +60,10 @@ func watchETHRate(conf *Config, w *Watcher) {
 		last := GetWeiInFiatUnit(rate, 2)
 
 		for retries := 0; retries < conf.Retries; retries++ {
-			UpdateExchangeRate(last, conf)
+			r := UpdateExchangeRate(last, conf)
+			if r != nil {
+				break
+			}
 		}
 
 		conf.Logger.Println("Sleeping for", int64(conf.UpdateRate), "minutes..")
@@ -79,7 +81,7 @@ func watchBTCRate(conf *Config, w *Watcher) {
 			continue
 		}
 
-		conf.Logger.Println("Average BTC/" + conf.FiatSymbol + " exchange rate -", rate)
+		conf.Logger.Println("Average BTC/"+conf.FiatSymbol+" exchange rate -", rate)
 
 		SetRate(constants.BTC, rate)
 

@@ -196,6 +196,17 @@ func CheckIsKycPassed(addrStr string) (bool, error) {
 	return whiteListed, nil
 }
 
+func CheckCrowdsaleNotFinished() (bool, error) {
+	state, err := session.CrowdsaleState()
+	if err != nil {
+		log.Println("Failed to get current crowdsale state")
+		return false, errors.New(uErr.ErrICOFinished)
+	}
+
+	// Crowdsale state is described by enum, where 4 is FINISHED
+	return state == 4, nil
+}
+
 func createAuth(key string, gasPrice *big.Int, gasLimit uint64) (auth *bind.TransactOpts, err error) {
 	privateKey, err := crypto.HexToECDSA(key)
 	if err != nil {

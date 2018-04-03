@@ -1,5 +1,8 @@
 # This is example configuration file for ExchangeRateService
 
+# TCP server port
+tcp_port: 9090
+
 # Infura service connection token
 infura_token: 1FXGefsSL6IqcH6Zj5Gc
 

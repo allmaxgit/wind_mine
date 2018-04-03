@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"WindToken/db/types"
 	"WindToken/configs"
+	"WindToken/db/types"
 
 	"github.com/go-pg/pg"
 	"github.com/go-pg/pg/orm"
@@ -25,7 +25,9 @@ func Initiate(conf configs.DB) (err error) {
 		Password: conf.Password,
 	})
 	err = createSchema()
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	log.Println("database initialization complete")
 
@@ -37,6 +39,7 @@ func createSchema() error {
 		&types.Buyer{},
 		&types.Transaction{},
 		&types.NotHandledTransaction{},
+		&types.NotHandledBTCReturn{},
 	} {
 		err := Instance.CreateTable(model, &orm.CreateTableOptions{
 			IfNotExists: true,

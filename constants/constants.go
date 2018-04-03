@@ -17,3 +17,8 @@ const (
 	BTC = iota
 	ETH
 )
+
+const (
+	BitcoinMainnetMagic  = 0xD9B4BEF9
+	BitcoinTestnet3Magic = 0x0709110B
+)

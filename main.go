@@ -2,18 +2,18 @@ package main
 
 import (
 	"flag"
-	"os"
-	"log"
 	"fmt"
+	"log"
+	"os"
 
-	uErr "WindToken/errors"
-	"WindToken/db"
-	"WindToken/utils"
 	"WindToken/configs"
 	"WindToken/crypto"
 	"WindToken/crypto/btc"
 	"WindToken/crypto/eth"
+	"WindToken/db"
+	uErr "WindToken/errors"
 	"WindToken/service"
+	"WindToken/utils"
 )
 
 func main() {

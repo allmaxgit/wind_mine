@@ -2,21 +2,21 @@ package buyer
 
 import (
 	"errors"
-	"strings"
 	"log"
+	"strings"
 
-	uErr "WindToken/errors"
 	buyerGW "WindToken/api/buyer"
 	"WindToken/configs"
 	"WindToken/db/models/buyer"
+	uErr "WindToken/errors"
 
-	"golang.org/x/net/context"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/btcsuite/btcutil"
 	"github.com/btcsuite/btcd/chaincfg"
+	"github.com/btcsuite/btcutil"
+	"github.com/ethereum/go-ethereum/common"
+	"golang.org/x/net/context"
 )
 
-type RPC struct {}
+type RPC struct{}
 
 // AddBuyer adds new buyer.
 func (r *RPC) GetBTCWallet(ctx context.Context, in *buyerGW.GetBTCWalletReq) (*buyerGW.GetBTCWalletResp, error) {

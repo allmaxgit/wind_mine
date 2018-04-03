@@ -22,6 +22,7 @@
     "chaincfg",
     "chaincfg/chainhash",
     "rpcclient",
+    "txscript",
     "wire"
   ]
   revision = "2be2f12b358dc57d70b8f501b00be450192efbc3"
@@ -425,6 +426,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "74652a1bed4be4d54da426a5ec16914cb7ae11aac7137a736654bce82b352b74"
+  inputs-digest = "8ae859267ba128060860f483c51b64905d7380d797bfdcd93183fba454ba98fa"
   solver-name = "gps-cdcl"
   solver-version = 1

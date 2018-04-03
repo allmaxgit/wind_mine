@@ -1,10 +1,10 @@
 package utils
 
 import (
-	"log"
-	"os/exec"
-	"os"
 	"io"
+	"log"
+	"os"
+	"os/exec"
 	"path"
 )
 

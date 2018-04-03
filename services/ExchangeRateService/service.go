@@ -1,20 +1,22 @@
 package main
 
 import (
-	"net"
-	"fmt"
 	"bytes"
 	"encoding/gob"
+	"fmt"
+	"net"
 
+	"WindToken/constants"
 	uErr "WindToken/errors"
 	"WindToken/types"
-	"WindToken/constants"
 )
 
 // StartTCPServer starts TCP listening on certain port.
-func StartTCPServer(conf *Config, port uint, w *Watcher) (err error) {
-	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil { return }
+func StartTCPServer(conf *Config, w *Watcher) (err error) {
+	l, err := net.Listen("tcp", fmt.Sprintf("127.0.0.1:%d", conf.Port))
+	if err != nil {
+		return
+	}
 	defer l.Close()
 
 	for {
@@ -30,8 +32,8 @@ func StartTCPServer(conf *Config, port uint, w *Watcher) (err error) {
 			var message bytes.Buffer
 			enc := gob.NewEncoder(&message)
 			enc.Encode(types.RateServiceResp{
-				Currency: currency,
-				Value: value,
+				Currency:     currency,
+				Value:        value,
 				FiatCurrency: fiatSymbol,
 			})
 

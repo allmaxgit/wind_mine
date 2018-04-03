@@ -10,8 +10,8 @@ func New(ethAddr, btcAddr string) (err error) {
 	var transactions []*types.Transaction
 
 	err = db.Instance.Insert(&types.Buyer{
-		EthAddr: ethAddr,
-		BtcAddr: btcAddr,
+		EthAddr:      ethAddr,
+		BtcAddr:      btcAddr,
 		Transactions: transactions,
 	})
 

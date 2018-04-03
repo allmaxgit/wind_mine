@@ -1,0 +1,56 @@
+diff --git a/rpcclient/wallet.go b/rpcclient/wallet.go
+index 10c12f1f7..aeeb4d067 100644
+--- a/rpcclient/wallet.go
++++ b/rpcclient/wallet.go
+@@ -2250,6 +2250,28 @@ func (r FutureGetInfoResult) Receive() (*btcjson.InfoWalletResult, error) {
+ 	return &infoRes, nil
+ }
+ 
++// FutureGetNetworkInfoResult is a future promise to deliver the result of a
++// GetNetworkInfoAsync RPC invocation (or an applicable error).
++type FutureGetNetworkInfoResult chan *response
++
++// Receive waits for the response promised by the future and returns the network info
++// provided by the server.
++func (r FutureGetNetworkInfoResult) Receive() (*btcjson.GetNetworkInfoResult, error) {
++	res, err := receiveFuture(r)
++	if err != nil {
++		return nil, err
++	}
++
++	// Unmarshal result as a getnetworkinfo result object.
++	var infoRes btcjson.GetNetworkInfoResult
++	err = json.Unmarshal(res, &infoRes)
++	if err != nil {
++		return nil, err
++	}
++
++	return &infoRes, nil
++}
++
+ // GetInfoAsync returns an instance of a type that can be used to get the result
+ // of the RPC at some future time by invoking the Receive function on the
+ // returned instance.
+@@ -2267,6 +2289,22 @@ func (c *Client) GetInfo() (*btcjson.InfoWalletResult, error) {
+ 	return c.GetInfoAsync().Receive()
+ }
+ 
++// GetNetworkInfoAsync returns an instance of a type that can be used to get the result
++// of the RPC at some future time by invoking the Receive function on the
++// returned instance.
++//
++// See GetNetworkInfo for the blocking version and more details.
++func (c *Client) GetNetworkInfoAsync() FutureGetNetworkInfoResult{
++	cmd := btcjson.NewGetNetworkInfoCmd()
++	return c.sendCmd(cmd)
++}
++
++// GetNetworkInfo returns returns information about the node’s connection to the network.
++// Networks and LocalAddresses fields are optional and may contain zero elements.
++func (c *Client) GetNetworkInfo() (*btcjson.GetNetworkInfoResult, error) {
++	return c.GetNetworkInfoAsync().Receive()
++}
++
+ // TODO(davec): Implement
+ // backupwallet (NYI in btcwallet)
+ // encryptwallet (Won't be supported by btcwallet since it's always encrypted)

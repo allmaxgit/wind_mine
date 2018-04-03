@@ -2,16 +2,16 @@ package main
 
 import (
 	"flag"
-	"log"
 	"fmt"
+	"log"
 	"os"
 
 	uErr "WindToken/errors"
-	"WindToken/utils"
+	"WindToken/services/BTCService/btc"
 	"WindToken/services/BTCService/configs"
 	"WindToken/services/BTCService/service"
-	"WindToken/services/BTCService/btc"
 	"WindToken/services/BTCService/store"
+	"WindToken/utils"
 )
 
 func main() {
@@ -51,7 +51,7 @@ func main() {
 	// Start TCP Server.
 	fmt.Println("Launching TCP...")
 	if err := service.StartTCPServer(conf.Server.TCPPort, btcWatcher); err != nil {
-		uErr.Fatal(err, "filed to start tcp server")
+		uErr.Fatal(err, "failed to start tcp server")
 	}
 }
 

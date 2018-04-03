@@ -1,18 +1,18 @@
 package service
 
 import (
-	"net"
 	"fmt"
-	"os"
+	"net"
 	"net/http"
+	"os"
 
 	buyerGW "WindToken/api/buyer"
 	"WindToken/controllers/buyer"
 
+	"github.com/gorilla/handlers"
+	"github.com/grpc-ecosystem/grpc-gateway/runtime"
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
-	"github.com/grpc-ecosystem/grpc-gateway/runtime"
-	"github.com/gorilla/handlers"
 )
 
 // StartGRPCServer starts gRPC server for REST wrapper.
