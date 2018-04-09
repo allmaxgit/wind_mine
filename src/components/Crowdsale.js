@@ -239,78 +239,78 @@ class Crowdsale extends Component {
   }
 
   async setPrivateSaleStartDate() {
-    const {web3, instanceCrowdsale} = this.props;
-    const {privateSale, privateSaleStartDate} = this.state;
+    const { web3, instanceCrowdsale } = this.props;
+    const { privateSale, newPrivateSaleStartDate } = this.state;
 
-    let date = moment.unix(privateSaleStartDate);
+    let date = moment.unix(newPrivateSaleStartDate);
 
     if (date.isValid()) {
       if (await this.feasibility(instanceCrowdsale.setPrivateSaleStartDate, [
-          privateSaleStartDate, {from: web3.eth.accounts[0], gas: 300000}
+          newPrivateSaleStartDate, {from: web3.eth.accounts[0], gas: 300000}
         ])) {
         privateSale.startDate = await instanceCrowdsale.privateSaleStartDate();
 
-        this.setState({privateSale});
+        this.setState({ privateSale });
       }
     } else {
-      alert(`${privateSaleStartDate} is not Unix Timestamp!`);
+      alert(`${newPrivateSaleStartDate} is not Unix Timestamp!`);
     }
   }
 
   async setPreIcoStartDate() {
     const {web3, instanceCrowdsale} = this.props;
-    const {preIco, preIcoStartDate} = this.state;
+    const {preIco, newPreIcoStartDate} = this.state;
 
-    let date = moment.unix(preIcoStartDate);
+    let date = moment.unix(newPreIcoStartDate);
 
     if (date.isValid()) {
       if (await this.feasibility(instanceCrowdsale.setPreIcoStartDate, [
-          preIcoStartDate, {from: web3.eth.accounts[0], gas: 300000}
+          newPreIcoStartDate, {from: web3.eth.accounts[0], gas: 300000}
         ])) {
         preIco.startDate = await instanceCrowdsale.preIcoStartDate();
 
         this.setState({preIco});
       }
     } else {
-      alert(`${preIcoStartDate} is not Unix Timestamp!`);
+      alert(`${newPreIcoStartDate} is not Unix Timestamp!`);
     }
   }
 
   async setIcoStartDate() {
-    const {web3, instanceCrowdsale} = this.props;
-    const {ico, icoStartDate} = this.state;
+    const { web3, instanceCrowdsale } = this.props;
+    const { ico, newIcoStartDate } = this.state;
 
-    let date = moment.unix(icoStartDate);
+    let date = moment.unix(newIcoStartDate);
 
     if (date.isValid()) {
       if (await this.feasibility(instanceCrowdsale.setIcoStartDate, [
-          icoStartDate, {from: web3.eth.accounts[0], gas: 300000}
+          newIcoStartDate, {from: web3.eth.accounts[0], gas: 300000}
         ])) {
         ico.startDate = await instanceCrowdsale.icoStartDate();
 
         this.setState({ico});
       }
     } else {
-      alert(`${icoStartDate} is not Unix Timestamp!`);
+      alert(`${newIcoStartDate} is not Unix Timestamp!`);
     }
   }
 
   async setIcoFinishDate() {
     const {web3, instanceCrowdsale} = this.props;
-    const {ico, icoFinishDate} = this.state;
+    const {ico, newIcoFinishDate} = this.state;
 
-    let date = moment.unix(icoFinishDate);
+    let date = moment.unix(newIcoFinishDate);
 
     if (date.isValid()) {
       if (await this.feasibility(instanceCrowdsale.setIcoFinishDate, [
-          icoFinishDate, {from: web3.eth.accounts[0], gas: 300000}
+          newIcoFinishDate, {from: web3.eth.accounts[0], gas: 300000}
         ])) {
         ico.finishDate = await instanceCrowdsale.icoFinishDate();
 
         this.setState({ico});
       }
     } else {
-      alert(`${icoFinishDate} is not Unix Timestamp!`);
+      alert(`${newIcoFinishDate} is not Unix Timestamp!`);
     }
   }
 
