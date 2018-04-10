@@ -173,7 +173,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 							w.OnNewValue(vout.Value, ownerAddr, tx.Hash)
 						}
 
-						log.Println("tx owner:", ownerAddr, "tx value", vout.Value)
+						log.Println("tx owner:", ownerAddr, "tx value", vout.Value, "tx hash", tx.Hash)
 					}
 				}
 			}
@@ -195,7 +195,12 @@ func (w *Watcher) WatchAddress(addr string) error {
 //ReturnBTC returns `amount` BTC back to `to`, using `receiveHash` as input transaction
 func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 	log.Println("Sending", amount, "BTC back to", to, "...")
-	txHash, _ := chainhash.NewHashFromStr(receiveHash)
+	log.Println("Receiving TX is specified by hash - ", receiveHash)
+	txHash, err := chainhash.NewHashFromStr(receiveHash)
+	if err != nil {
+		log.Println("Failed to create hash from string ", receiveHash, " - ", err)
+		return err
+	}
 	tx, err := w.client.GetRawTransactionVerbose(txHash)
 	if err != nil {
 		log.Println("Failed to get raw TX by hash", receiveHash, ":", err)

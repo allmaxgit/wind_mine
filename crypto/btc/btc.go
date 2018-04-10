@@ -151,14 +151,14 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	}
 
 	//check if crowdsale is finished
-	finished, err := eth.CheckCrowdsaleNotFinished()
+	finished, err := eth.IsCrowdsaleFinished()
 	if err != nil || finished {
 		btcReturnRequired = true
 		return
 	}
 
 	//check if corresponding ETH address has passed KYC
-	kycPassed, err := eth.CheckIsKycPassed(investor.EthAddr)
+	kycPassed, err := eth.IsKycPassed(investor.EthAddr)
 	if err != nil {
 		err = saveUnhandledBtcReturn(buyerAddr, value, txHash, true)
 		if err != nil {

@@ -197,6 +197,12 @@
   revision = "04140366298a54a039076d798123ffa108fff46c"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/kataras/iris"
+  packages = ["core/errors"]
+  revision = "47bee3e740b664912e57480803e437fae7b38785"
+
+[[projects]]
   name = "github.com/magiconair/properties"
   packages = ["."]
   revision = "c3beff4c2358b44d0493c7dda585e7db7ff28ae6"
@@ -246,6 +252,12 @@
   packages = ["."]
   revision = "feef513b9575b32f84bafa580aad89b011259019"
   version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/satori/go.uuid"
+  packages = ["."]
+  revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -426,6 +438,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8ae859267ba128060860f483c51b64905d7380d797bfdcd93183fba454ba98fa"
+  inputs-digest = "1ebec67e7c2a9fd2b10f83cc987516aa712ed85d0036aa7bfbfb74da8959954a"
   solver-name = "gps-cdcl"
   solver-version = 1

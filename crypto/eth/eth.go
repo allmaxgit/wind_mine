@@ -183,10 +183,10 @@ func manualReserve(addrStr string, amount *big.Int) (receipt *types.Receipt, err
 	return
 }
 
-//CheckIsKycPassed check in contract if address has passed KYC
-func CheckIsKycPassed(addrStr string) (bool, error) {
+//IsKycPassed check in contract if address has passed KYC
+func IsKycPassed(addrStr string) (bool, error) {
 	addr := common.HexToAddress(addrStr)
-
+	log.Println("Checking KYC for address ", addr.Hex(), "...")
 	whiteListed, err := session.WhiteList(addr)
 	if err != nil {
 		log.Println("whiteList() error:", err)
@@ -196,7 +196,7 @@ func CheckIsKycPassed(addrStr string) (bool, error) {
 	return whiteListed, nil
 }
 
-func CheckCrowdsaleNotFinished() (bool, error) {
+func IsCrowdsaleFinished() (bool, error) {
 	state, err := session.CrowdsaleState()
 	if err != nil {
 		log.Println("Failed to get current crowdsale state")

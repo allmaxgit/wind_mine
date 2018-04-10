@@ -191,7 +191,7 @@ func GetCryptonatorRate(forCurrency uint8, symbol string, conf *Config) float64 
 	for retries := 0; retries < conf.Retries; retries++ {
 		resp, err := http.Get(fullUrl)
 		if err != nil {
-			conf.Logger.Println("CryptoCompare request error: " + err.Error())
+			conf.Logger.Println("Cryptonator request error: " + err.Error())
 			continue
 		}
 		response := &CryptonatorResponse{}
@@ -246,7 +246,7 @@ func GetCoinMarketCapRate(forCurrency uint8, symbol string, conf *Config) float6
 	for retries := 0; retries < conf.Retries; retries++ {
 		resp, err := http.Get(fullUrl)
 		if err != nil {
-			conf.Logger.Println("CryptoCompare request error: " + err.Error())
+			conf.Logger.Println("CoinMarketCap request error: " + err.Error())
 			continue
 		}
 		dec := json.NewDecoder(resp.Body)
