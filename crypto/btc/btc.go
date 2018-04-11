@@ -147,12 +147,55 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	// Find investor in db.
 	investor, found, err := buyer.FindByBTCAddress(buyerAddr)
 	if err != nil {
+		log.Println("Failed to find investor")
 		uErr.Fatal(err, "failed to find investor")
+	}
+
+	// Save transaction in DB.
+	var ok bool
+	if !found || (found && investor == nil) { // TODO: Save data in db
+		log.Println("BTC Buyer not found")
+		uErr.LogError(nil, "failed to find investor")
+		btcReturnRequired = true
+		return
+	} else {
+		err := db.Instance.Insert(&dbTypes.Transaction{
+			Buyer:   investor,
+			BuyerId: investor.Id,
+			From:    buyerAddr,
+			Amount:  value,
+			Hash:    txHash,
+		})
+		if err != nil {
+			uErr.LogError(err, "failed to insert Transaction")
+		} else {
+			ok = true
+		}
+	}
+
+	if !ok {
+		btcReturnRequired = true
+		return
+	}
+
+	// Save transaction as not handled if something went wrong.
+	if !ok && !notHandledFound {
+		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
+			From:   buyerAddr,
+			Amount: value,
+			Hash:   txHash,
+		})
+		if err != nil {
+			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
+		}
+		btcReturnRequired = true
+		return
 	}
 
 	//check if crowdsale is finished
 	finished, err := eth.IsCrowdsaleFinished()
 	if err != nil || finished {
+		log.Println("Crowdsale has finished, BTC should be returned")
 		btcReturnRequired = true
 		return
 	}
@@ -171,52 +214,21 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 		return
 	}
 
-	// Save transaction in DB.
-	var ok bool
-	if !found { // TODO: Save data in db
-		uErr.LogError(nil, "failed to find investor")
-	} else {
-		err := db.Instance.Insert(&dbTypes.Transaction{
-			Buyer:   investor,
-			BuyerId: investor.Id,
-			From:    buyerAddr,
-			Amount:  value,
-			Hash:    txHash,
-		})
-		if err != nil {
-			uErr.LogError(err, "failed to insert Transaction")
-		} else {
-			ok = true
-		}
+	// Update ICO state info.
+	err = eth.GetTokenPrice()
+	if err != nil && err.Error() != uErr.ErrICOFinished {
+		uErr.Fatal(err, "failed to get token price while updating investor balance")
 	}
 
-	// Save transaction as not handled if something went wrong.
-	if !ok && !notHandledFound {
-		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
-			From:   buyerAddr,
-			Amount: value,
-			Hash:   txHash,
-		})
-		if err != nil {
-			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
-		}
-	} else if ok {
-		// Update ICO state info.
-		err := eth.GetTokenPrice()
-		if err != nil && err.Error() != uErr.ErrICOFinished {
-			uErr.Fatal(err, "failed to get token price while updating investor balance")
-		}
+	// Convert BTC to tokens.
+	tokensValue := eth.ConvertBTCToTokens(value)
 
-		// Convert BTC to tokens.
-		tokensValue := eth.ConvertBTCToTokens(value)
-
-		// Send tokens to investor ETH address.
-		log.Println("Send tokens to investor:", tokensValue.String())
-		err = eth.SendTokens(investor.EthAddr, tokensValue)
-		if err != nil {
-			// TODO: Save in not handled transactions.
-			uErr.Fatal(err, "failed to send tokens while updating investor balance")
-		}
+	// Send tokens to investor ETH address.
+	log.Println("Send tokens to investor:", tokensValue.String())
+	err = eth.SendTokens(investor.EthAddr, tokensValue)
+	if err != nil {
+		// TODO: Save in not handled transactions.
+		uErr.Fatal(err, "failed to send tokens while updating investor balance")
 	}
 
 	return false
