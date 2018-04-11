@@ -170,10 +170,10 @@ func (w *Watcher) WatchAddress(addr string) error {
 						ownerOut := ownerTx.Vout[ownerTxOutIndex]
 						ownerAddr := ownerOut.ScriptPubKey.Addresses[0]
 						if w.OnNewValue != nil {
-							w.OnNewValue(vout.Value, ownerAddr, tx.Hash)
+							w.OnNewValue(vout.Value, ownerAddr, txStr)
 						}
 
-						log.Println("tx owner:", ownerAddr, "tx value", vout.Value, "tx hash", tx.Hash)
+						log.Println("tx owner:", ownerAddr, "tx value", vout.Value, "tx hash", tx.Txid)
 					}
 				}
 			}
@@ -225,8 +225,7 @@ func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 	miningInfo, err := w.client.GetMiningInfo()
 	if err != nil || miningInfo.TestNet {
 		magic = constants.BitcoinTestnet3Magic
-	}
-	if !miningInfo.TestNet {
+	} else if !miningInfo.TestNet {
 		magic = constants.BitcoinMainnetMagic
 	}
 
@@ -299,7 +298,7 @@ func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 		return errors.New(uErr.ErrSendRawTx)
 	}
 
-	log.Printf("Returning %f BTC to %s: %s", amount, to, hash.String())
+	log.Printf("Returning %f BTC to %s, returning TX hash - %s", amount, to, hash.String())
 
 	return nil
 }
