@@ -78,34 +78,77 @@ func UpdateGasLimit() (err error) {
 	return
 }
 
+func getLatestState() uint8 {
+	state, err := session.CrowdsaleState()
+	if err != nil {
+		return 0
+	}
+
+	currentTime := big.NewInt(time.Now().UTC().Unix())
+
+	privateSaleStartDate, err := session.PrivateSaleStartDate()
+	if err != nil {
+		return 0
+	}
+	preIcoStartDate, err := session.PreIcoStartDate()
+	if err != nil {
+		return 0
+	}
+	icoStartDate, err := session.IcoStartDate()
+	if err != nil {
+		return 0
+	}
+	icoFinishDate, err := session.IcoFinishDate()
+	if err != nil {
+		return 0
+	}
+
+	updateStateTxRequired := false
+	if currentTime.Cmp(privateSaleStartDate) >= 0 && currentTime.Cmp(preIcoStartDate) < 0 && state != 1 {
+		// current time is withing Private Sale stage period but state is not PRIVATE
+		updateStateTxRequired = true
+	}
+	if currentTime.Cmp(preIcoStartDate) >= 0 && currentTime.Cmp(icoStartDate) < 0 && state != 2 {
+		// current time is withing Pre-ICO stage period but state is not PRE_ICO
+		updateStateTxRequired = true
+	}
+	if currentTime.Cmp(icoStartDate) >= 0 && currentTime.Cmp(icoFinishDate) < 0 && state != 3 {
+		// current time is withing ICO stage period but state is not ICO
+		updateStateTxRequired = true
+	}
+	if currentTime.Cmp(icoFinishDate) >= 0 && state != 4 {
+		// current time is after ICO finish date but state is not FINISHED
+		updateStateTxRequired = true
+	}
+
+	if updateStateTxRequired {
+		tx, err := session.CheckState()
+		if err != nil {
+			return 0
+		}
+
+		receipt, err := getReceipt(tx, false)
+
+		if receipt.Status == 0 {
+			return 0
+		}
+
+		state, err = session.CrowdsaleState()
+		if err != nil {
+			return 0
+		}
+	}
+
+	return state
+}
+
 // GetTokenPrice determines token price in euro cents
 // depending on ICO period.
 //
 // How match euro cents in one token.
 func GetTokenPrice() (err error) {
 	fmt.Println("Getting token price...")
-	state, err := session.CrowdsaleState()
-	if err != nil {
-		return
-	}
-
-	if state == 0 {
-		tx, err := session.CheckState()
-		if err != nil {
-			return err
-		}
-
-		receipt, err := getReceipt(tx, false)
-
-		if receipt.Status == 0 {
-			return errors.New(uErr.ErrReceiptStatus)
-		}
-	}
-
-	state, err = session.CrowdsaleState()
-	if err != nil {
-		return uErr.Combine(err, "failed get Crowdsale state in second time")
-	}
+	state := getLatestState()
 
 	switch state {
 	case 0:

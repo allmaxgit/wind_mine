@@ -135,6 +135,7 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	if err != nil {
 		uErr.Fatal(err, "failed to find transaction")
 	}
+
 	if found {
 		return false
 	}
@@ -224,11 +225,18 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	tokensValue := eth.ConvertBTCToTokens(value)
 
 	// Send tokens to investor ETH address.
-	log.Println("Send tokens to investor:", tokensValue.String())
+	log.Println("Send", tokensValue.String(), "WMD tokens to investor:", investor.EthAddr)
 	err = eth.SendTokens(investor.EthAddr, tokensValue)
 	if err != nil {
-		// TODO: Save in not handled transactions.
 		uErr.Fatal(err, "failed to send tokens while updating investor balance")
+		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
+			From:   buyerAddr,
+			Amount: value,
+			Hash:   txHash,
+		})
+		if err != nil {
+			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
+		}
 	}
 
 	return false
