@@ -34,10 +34,6 @@
   version = "1.0.0"
 
 [[constraint]]
-  name = "github.com/ethereum/go-ethereum"
-  revision = "5603715c06998ff9ed30eb134c4398ad1439ef48"
-
-[[constraint]]
   branch = "master"
   name = "golang.org/x/net"
 

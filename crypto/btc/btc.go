@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"time"
+	"errors"
 
 	"WindToken/constants/messageTypes"
 	"WindToken/crypto"
@@ -20,8 +21,6 @@ import (
 	dbTypes "WindToken/db/types"
 	uErr "WindToken/errors"
 	"WindToken/types"
-
-	"github.com/kataras/iris/core/errors"
 )
 
 type ReturnBTCData struct {
