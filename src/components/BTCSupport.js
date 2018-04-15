@@ -67,7 +67,7 @@ class BTCSupport extends Component {
         'Content-Type': 'application/json'
       });
 
-      const resp = await fetch('http://162.213.252.104:9091/v1/getBTCWallet', {
+      const resp = await fetch('http://localhost:9091/v1/getBTCWallet', {
         method: 'POST',
         header,
         body: JSON.stringify({

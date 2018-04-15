@@ -9,4 +9,4 @@
     rpcHost = "89.111.20.200:8332" # TODO: Change to localhost
     user = "bitcoin"
     password = "local321"
-    private_key = "" #TODO change to private key from mainnet account
+    private_key = "cTTFf6E8zeHPdNSDPFS3VTQSYLTGARKD3vCp2tJV1CM2WeeeTAPt"

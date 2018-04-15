@@ -78,68 +78,30 @@ func UpdateGasLimit() (err error) {
 	return
 }
 
-func getLatestState() uint8 {
-	state, err := session.CrowdsaleState()
-	if err != nil {
-		return 0
-	}
-
+func getLatestState() (state uint8) {
 	currentTime := big.NewInt(time.Now().UTC().Unix())
 
 	privateSaleStartDate, err := session.PrivateSaleStartDate()
-	if err != nil {
-		return 0
-	}
+	if err != nil { return }
 	preIcoStartDate, err := session.PreIcoStartDate()
-	if err != nil {
-		return 0
-	}
+	if err != nil { return }
 	icoStartDate, err := session.IcoStartDate()
-	if err != nil {
-		return 0
-	}
+	if err != nil { return }
 	icoFinishDate, err := session.IcoFinishDate()
-	if err != nil {
-		return 0
-	}
+	if err != nil { return }
 
-	updateStateTxRequired := false
-	if currentTime.Cmp(privateSaleStartDate) >= 0 && currentTime.Cmp(preIcoStartDate) < 0 && state != 1 {
-		// current time is withing Private Sale stage period but state is not PRIVATE
-		updateStateTxRequired = true
+	switch {
+	case currentTime.Cmp(privateSaleStartDate) >= 0 && currentTime.Cmp(preIcoStartDate) < 0:
+		return 1
+	case currentTime.Cmp(preIcoStartDate) >= 0 && currentTime.Cmp(icoStartDate) < 0:
+		return 2
+	case currentTime.Cmp(icoStartDate) >= 0 && currentTime.Cmp(icoFinishDate) < 0:
+		return 3
+	case currentTime.Cmp(icoFinishDate) >= 0:
+		return 4
+	default:
+		return
 	}
-	if currentTime.Cmp(preIcoStartDate) >= 0 && currentTime.Cmp(icoStartDate) < 0 && state != 2 {
-		// current time is withing Pre-ICO stage period but state is not PRE_ICO
-		updateStateTxRequired = true
-	}
-	if currentTime.Cmp(icoStartDate) >= 0 && currentTime.Cmp(icoFinishDate) < 0 && state != 3 {
-		// current time is withing ICO stage period but state is not ICO
-		updateStateTxRequired = true
-	}
-	if currentTime.Cmp(icoFinishDate) >= 0 && state != 4 {
-		// current time is after ICO finish date but state is not FINISHED
-		updateStateTxRequired = true
-	}
-
-	if updateStateTxRequired {
-		tx, err := session.CheckState()
-		if err != nil {
-			return 0
-		}
-
-		receipt, err := getReceipt(tx, false)
-
-		if receipt.Status == 0 {
-			return 0
-		}
-
-		state, err = session.CrowdsaleState()
-		if err != nil {
-			return 0
-		}
-	}
-
-	return state
 }
 
 // GetTokenPrice determines token price in euro cents
@@ -294,9 +256,7 @@ func createCrowdsaleSession(contractAddr string) (*gocontracts.CrowdsaleSession,
 func prepareContracts(addrStr string) (err error) {
 	// Check contracts owner.
 	ownerAddress, err := session.Owner()
-	if err != nil {
-		return
-	}
+	if err != nil { return }
 
 	if addrStr != ownerAddress.Hex() {
 		return errors.New(uErr.ErrOwner)
@@ -304,9 +264,7 @@ func prepareContracts(addrStr string) (err error) {
 
 	// Check if contract not started or finished.
 	err = GetTokenPrice()
-	if err != nil {
-		return
-	}
+	if err != nil { return }
 
 	// Prepare contracts.
 	err = prepareCrowdsale()
@@ -395,7 +353,7 @@ func prepareCrowdsaleSync() (receipt *types.Receipt, err error) {
 		return
 	}
 
-	log.Println("tx:", tx.Hash())
+	log.Println("tx:", tx.Hash().Hex())
 
 	receipt, err = getReceipt(tx, true)
 	if err != nil {

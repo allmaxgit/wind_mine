@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"io"
 	"net"
-
-	"WindToken/constants/messageTypes"
-	uErr "WindToken/errors"
-	"WindToken/services/BTCService/btc"
-	"WindToken/types"
 	"log"
+
+	uErr "WindToken/errors"
+	"WindToken/types"
+	"WindToken/constants/messageTypes"
+	"WindToken/services/BTCService/btc"
 )
 
 // StartTCPServer starts TCP listening on certain port.
@@ -30,7 +30,7 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			continue
 		}
 
-		btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
+		btcWatcher.OnNewValue = func(value float64, from []string, txHash string) {
 			var message bytes.Buffer
 			enc := gob.NewEncoder(&message)
 			enc.Encode(types.BTCServiceResp{
@@ -82,7 +82,7 @@ func handleConnection(conn net.Conn, btcWatcher *btc.Watcher) {
 						enc.Encode(types.BTCServiceResp{
 							Type:   messageTypes.RETURN_FAILED,
 							Value:  message.Value,
-							From:   message.To,
+							From:   []string{message.To},
 							TXHash: message.ReceiveTXHash,
 						})
 

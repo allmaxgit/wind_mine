@@ -15,10 +15,10 @@ infura_token: 1FXGefsSL6IqcH6Zj5Gc
 network_id: 2
 
 # WindToken crowdsale contract address in the network, specified by network_id
-contract_address: 0x5717daabccf1bac87c147e69412fd2300f19b2a2
+contract_address: 0xec4428f18AbD0E538aEde524A4dF6F78C6978251
 
 # Account private key for signing TXs in network, specified by network_id
-private_key: 26f12d523ed75ebb5c0f3245d1d8aa5a6f7ffae8a1edfbe8a17b1fd71ec96568
+private_key: 093afb31f3bff9edb790580c27a81040dce8a1fef0053a61f30313cd53686dad
 
 # How many minutes service should wait between updates of exchange rate
 update_rate: 60

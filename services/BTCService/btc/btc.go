@@ -28,7 +28,7 @@ type Watcher struct {
 
 	ActiveWatcherId uint8
 
-	OnNewValue func(float64, string, string)
+	OnNewValue func(float64, []string, string)
 }
 
 const (
@@ -113,8 +113,8 @@ func (w *Watcher) WatchAddress(addr string) error {
 		if err != nil {
 			return err
 		}
-		log.Println("blocks count:", bCount)
-		log.Println("last handled block:", lastHandledBlock)
+		log.Println("BLOCK - last:", bCount)
+		log.Println("BLOCK - last handled:", lastHandledBlock)
 
 		// If lastHandledBlock backward in time.
 		backwardInTime := false
@@ -125,6 +125,7 @@ func (w *Watcher) WatchAddress(addr string) error {
 			sleep()
 			continue
 		}
+		log.Println("BLOCK - handling:", bCount)
 
 		lastHash, err := w.client.GetBlockHash(bCount)
 		if err != nil {
@@ -153,27 +154,39 @@ func (w *Watcher) WatchAddress(addr string) error {
 						log.Println("------------------")
 						log.Println("Transaction for", addr)
 						log.Println("txStr:", txStr)
-						log.Println("tx:", tx)
+						log.Println("tx:", tx.Hex)
 						log.Println("vout:", vout)
 						log.Println("------------------")
 
+						var ownerAddresses []string
 						// Detect TX owner.
 						in := tx.Vin[0]
-						ownerTxHash, _ := chainhash.NewHashFromStr(in.Txid)
 						ownerTxOutIndex := in.Vout
-
+						ownerTxHash, _ := chainhash.NewHashFromStr(in.Txid)
 						ownerTx, err := w.client.GetRawTransactionVerbose(ownerTxHash)
 						if err != nil {
 							return uErr.Combine(err, "failed to get owner tx")
 						}
 
 						ownerOut := ownerTx.Vout[ownerTxOutIndex]
-						ownerAddr := ownerOut.ScriptPubKey.Addresses[0]
+						ownerAddresses = append(ownerAddresses, ownerOut.ScriptPubKey.Addresses[0])
+
+						// Go deeper.
+						in2 := ownerTx.Vin[0]
+						ownerTxOutIndex2 := in2.Vout
+						ownerTxHash2, _ := chainhash.NewHashFromStr(in2.Txid)
+						ownerTx2, err := w.client.GetRawTransactionVerbose(ownerTxHash2)
+						if err != nil {
+							return uErr.Combine(err, "failed to get owner tx2")
+						}
+						ownerOut2 := ownerTx2.Vout[ownerTxOutIndex2]
+						ownerAddresses = append(ownerAddresses, ownerOut2.ScriptPubKey.Addresses[0])
+
 						if w.OnNewValue != nil {
-							w.OnNewValue(vout.Value, ownerAddr, txStr)
+							w.OnNewValue(vout.Value, ownerAddresses, txStr)
 						}
 
-						log.Println("tx owner:", ownerAddr, "tx value", vout.Value, "tx hash", tx.Txid)
+						log.Println("tx owner:", ownerAddresses, "tx value", vout.Value, "tx hash", tx.Txid)
 					}
 				}
 			}

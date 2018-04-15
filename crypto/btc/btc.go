@@ -16,7 +16,6 @@ import (
 	"WindToken/crypto/eth"
 	"WindToken/db"
 	"WindToken/db/models/buyer"
-	"WindToken/db/models/notHandledTransaction"
 	"WindToken/db/models/transaction"
 	dbTypes "WindToken/db/types"
 	uErr "WindToken/errors"
@@ -31,9 +30,7 @@ type ReturnBTCData struct {
 // Dial starts connection with BTCService via tcp.
 func Dial(port uint, walletAddress string) (err error) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil {
-		return
-	}
+	if err != nil { return }
 
 	var message bytes.Buffer
 	enc := gob.NewEncoder(&message)
@@ -81,7 +78,7 @@ func returnBtc(conn net.Conn, data *types.BTCServiceResp) {
 		Type:          messageTypes.RETURN_REQUIRED,
 		Value:         data.Value,
 		ReceiveTXHash: data.TXHash,
-		To:            data.From,
+		To:            data.From[0],
 	})
 
 	_, err := conn.Write(append(message.Bytes(), '\n'))
@@ -105,8 +102,9 @@ func handleMessage(line []byte) *ReturnBTCData {
 
 	switch message.Type {
 	case messageTypes.VALUE_RECEIVED:
-		returnRequired := updateBuyerBalance(message.Value, message.From, message.TXHash)
+		returnRequired, validOwnerAddr := updateBuyerBalance(message.Value, message.From, message.TXHash)
 		if returnRequired {
+			message.From = []string{validOwnerAddr}
 			return &ReturnBTCData{ReturnRequired: returnRequired, BTCData: message}
 		}
 		return nil
@@ -122,77 +120,53 @@ func handleMessage(line []byte) *ReturnBTCData {
 	}
 }
 
-func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcReturnRequired bool) {
+func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcReturnRequired bool, validOwnerAddr string) {
 	log.Println("Start updating investor's balance...")
 	// Waiting for rates.
 	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {
 		time.Sleep(5 * time.Second)
 	}
 
+	// Find investor in db.
+	var investor *dbTypes.Buyer
+	var err error
+	var found bool
+	for _, bAddr := range buyerAddr {
+		investor, found, err = buyer.FindByBTCAddress(bAddr)
+		if found {
+			validOwnerAddr = bAddr
+			err = nil
+			break
+		}
+	}
+	if err != nil || !found {
+		uErr.LogError(err, "failed to find investor")
+		btcReturnRequired = true
+		return
+	}
+
 	// Check if transaction already exist.
-	_, found, err := transaction.FindByHash(txHash)
+	_, found, err = transaction.FindByHash(txHash)
 	if err != nil {
 		uErr.Fatal(err, "failed to find transaction")
 	}
-
-	if found {
-		return false
-	}
-
-	_, notHandledFound, err := notHandledTransaction.FindByHash(txHash)
-	if err != nil {
-		uErr.Fatal(err, "failed to find not handled transaction!")
-	}
-
-	// Find investor in db.
-	investor, found, err := buyer.FindByBTCAddress(buyerAddr)
-	if err != nil {
-		log.Println("Failed to find investor")
-		uErr.Fatal(err, "failed to find investor")
-	}
+	if found { return }
 
 	// Save transaction in DB.
-	var ok bool
-	if !found || (found && investor == nil) { // TODO: Save data in db
-		log.Println("BTC Buyer not found")
-		uErr.LogError(nil, "failed to find investor")
-		btcReturnRequired = true
-		return
-	} else {
-		err := db.Instance.Insert(&dbTypes.Transaction{
-			Buyer:   investor,
-			BuyerId: investor.Id,
-			From:    buyerAddr,
-			Amount:  value,
-			Hash:    txHash,
-		})
-		if err != nil {
-			uErr.LogError(err, "failed to insert Transaction")
-		} else {
-			ok = true
-		}
-	}
-
-	if !ok {
+	err = db.Instance.Insert(&dbTypes.Transaction{
+		Buyer:   investor,
+		BuyerId: investor.Id,
+		From:    validOwnerAddr,
+		Amount:  value,
+		Hash:    txHash,
+	})
+	if err != nil {
+		uErr.LogError(err, "failed to insert Transaction")
 		btcReturnRequired = true
 		return
 	}
 
-	// Save transaction as not handled if something went wrong.
-	if !ok && !notHandledFound {
-		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
-			From:   buyerAddr,
-			Amount: value,
-			Hash:   txHash,
-		})
-		if err != nil {
-			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
-		}
-		btcReturnRequired = true
-		return
-	}
-
-	//check if crowdsale is finished
+	// Check if contract is finished.
 	finished, err := eth.IsCrowdsaleFinished()
 	if err != nil || finished {
 		log.Println("Crowdsale has finished, BTC should be returned")
@@ -200,15 +174,16 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 		return
 	}
 
-	//check if corresponding ETH address has passed KYC
+	// Check if corresponding ETH address has passed KYC.
 	kycPassed, err := eth.IsKycPassed(investor.EthAddr)
-	if err != nil {
-		err = saveUnhandledBtcReturn(buyerAddr, value, txHash, true)
+	if err != nil || !kycPassed {
 		if err != nil {
-			log.Println("Failed to save unhandled BTC return transaction")
+			uErr.LogError(err, "failed to pass KYC")
+			err = saveUnhandledBtcReturn([]string{validOwnerAddr}, value, txHash, true)
+			if err != nil {
+				uErr.LogError(err, "failed to save unhandled BTC return transaction")
+			}
 		}
-	}
-	if !kycPassed {
 		log.Println("KYC is not passed, BTC should be returned")
 		btcReturnRequired = true
 		return
@@ -227,23 +202,17 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	log.Println("Send", tokensValue.String(), "WMD tokens to investor:", investor.EthAddr)
 	err = eth.SendTokens(investor.EthAddr, tokensValue)
 	if err != nil {
-		uErr.Fatal(err, "failed to send tokens while updating investor balance")
-		err := db.Instance.Insert(&dbTypes.NotHandledTransaction{
-			From:   buyerAddr,
-			Amount: value,
-			Hash:   txHash,
-		})
-		if err != nil {
-			uErr.LogError(err, "failed to insert NotHandledTransaction from:", buyerAddr)
-		}
+		uErr.LogError(err, "failed to send tokens while updating investor balance")
+		btcReturnRequired = true
+		return
 	}
 
-	return false
+	return
 }
 
-func saveUnhandledBtcReturn(from string, amount float64, hash string, kycFailed bool) error {
+func saveUnhandledBtcReturn(from []string, amount float64, hash string, kycFailed bool) error {
 	err := db.Instance.Insert(&dbTypes.NotHandledBTCReturn{
-		From:      from,
+		From:      from[0],
 		Amount:    amount,
 		Hash:      hash,
 		KycFailed: kycFailed,
