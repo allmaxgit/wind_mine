@@ -78,7 +78,7 @@ func returnBtc(conn net.Conn, data *types.BTCServiceResp) {
 		Type:          messageTypes.RETURN_REQUIRED,
 		Value:         data.Value,
 		ReceiveTXHash: data.TXHash,
-		To:            data.From[0],
+		To:            data.From,
 	})
 
 	_, err := conn.Write(append(message.Bytes(), '\n'))
@@ -102,9 +102,8 @@ func handleMessage(line []byte) *ReturnBTCData {
 
 	switch message.Type {
 	case messageTypes.VALUE_RECEIVED:
-		returnRequired, validOwnerAddr := updateBuyerBalance(message.Value, message.From, message.TXHash)
+		returnRequired := updateBuyerBalance(message.Value, message.From, message.TXHash)
 		if returnRequired {
-			message.From = []string{validOwnerAddr}
 			return &ReturnBTCData{ReturnRequired: returnRequired, BTCData: message}
 		}
 		return nil
@@ -120,7 +119,7 @@ func handleMessage(line []byte) *ReturnBTCData {
 	}
 }
 
-func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcReturnRequired bool, validOwnerAddr string) {
+func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcReturnRequired bool) {
 	log.Println("Start updating investor's balance...")
 	// Waiting for rates.
 	for crypto.GetBTCRate() == 0 || crypto.GetETHRate() == 0 {
@@ -128,17 +127,7 @@ func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcRe
 	}
 
 	// Find investor in db.
-	var investor *dbTypes.Buyer
-	var err error
-	var found bool
-	for _, bAddr := range buyerAddr {
-		investor, found, err = buyer.FindByBTCAddress(bAddr)
-		if found {
-			validOwnerAddr = bAddr
-			err = nil
-			break
-		}
-	}
+	investor, found, err := buyer.FindByBTCAddress(buyerAddr)
 	if err != nil || !found {
 		uErr.LogError(err, "failed to find investor")
 		btcReturnRequired = true
@@ -156,7 +145,7 @@ func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcRe
 	err = db.Instance.Insert(&dbTypes.Transaction{
 		Buyer:   investor,
 		BuyerId: investor.Id,
-		From:    validOwnerAddr,
+		From:    buyerAddr,
 		Amount:  value,
 		Hash:    txHash,
 	})
@@ -179,7 +168,7 @@ func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcRe
 	if err != nil || !kycPassed {
 		if err != nil {
 			uErr.LogError(err, "failed to pass KYC")
-			err = saveUnhandledBtcReturn([]string{validOwnerAddr}, value, txHash, true)
+			err = saveUnhandledBtcReturn(buyerAddr, value, txHash, true)
 			if err != nil {
 				uErr.LogError(err, "failed to save unhandled BTC return transaction")
 			}
@@ -210,9 +199,9 @@ func updateBuyerBalance(value float64, buyerAddr []string, txHash string) (btcRe
 	return
 }
 
-func saveUnhandledBtcReturn(from []string, amount float64, hash string, kycFailed bool) error {
+func saveUnhandledBtcReturn(from string, amount float64, hash string, kycFailed bool) error {
 	err := db.Instance.Insert(&dbTypes.NotHandledBTCReturn{
-		From:      from[0],
+		From:      from,
 		Amount:    amount,
 		Hash:      hash,
 		KycFailed: kycFailed,

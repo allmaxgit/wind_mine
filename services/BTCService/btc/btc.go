@@ -28,7 +28,7 @@ type Watcher struct {
 
 	ActiveWatcherId uint8
 
-	OnNewValue func(float64, []string, string)
+	OnNewValue func(float64, string, string)
 }
 
 const (
@@ -182,8 +182,10 @@ func (w *Watcher) WatchAddress(addr string) error {
 						ownerOut2 := ownerTx2.Vout[ownerTxOutIndex2]
 						ownerAddresses = append(ownerAddresses, ownerOut2.ScriptPubKey.Addresses[0])
 
-						if w.OnNewValue != nil {
-							w.OnNewValue(vout.Value, ownerAddresses, txStr)
+						for _, oAddr := range ownerAddresses {
+							if w.OnNewValue != nil {
+								w.OnNewValue(vout.Value, oAddr, txStr)
+							}
 						}
 
 						log.Println("tx owner:", ownerAddresses, "tx value", vout.Value, "tx hash", tx.Txid)

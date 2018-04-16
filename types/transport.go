@@ -12,7 +12,7 @@ type (
 	BTCServiceResp struct {
 		Type   string
 		Value  float64
-		From   []string
+		From   string
 		TXHash string
 	}
 
