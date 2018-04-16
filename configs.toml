@@ -17,13 +17,13 @@
       # 3 - RINKEBY net
       # 4 - KOVAN net
       # 5 - INFURANET net
-    ethNetworkId = 2
+    ethNetworkId = 3
     infuraToken = "1FXGefsSL6IqcH6Zj5Gc"
 
     # Contract
-    crowdsaleAddress = "0xec4428f18AbD0E538aEde524A4dF6F78C6978251"
-    ownerPrivateKey = "093afb31f3bff9edb790580c27a81040dce8a1fef0053a61f30313cd53686dad"
-    ownerAddress = "0xcD628372B2429b8E079C235Ee6843F03f298041E" # Important! Must be associated with ownerPrivateKey.
+    crowdsaleAddress = "0xe83ef51d7575834570e6231f2193a27ba96851b6"
+    ownerPrivateKey = "28e5d6796f472566f7e1fabc0ac277f1b39527505293831f63979c33f0c7665f"
+    ownerAddress = "0xc851D654F07Bfc2DbFEa8C7661a1cfca53575E47" # Important! Must be associated with ownerPrivateKey.
     gasPrice = 5000000000 # Wei.
     gasLimit = 4700000
 

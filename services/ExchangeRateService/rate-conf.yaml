@@ -12,13 +12,13 @@ infura_token: 1FXGefsSL6IqcH6Zj5Gc
 # 3 - RINKEBY net
 # 4 - KOVAN net
 # 5 - INFURANET net
-network_id: 2
+network_id: 3
 
 # WindToken crowdsale contract address in the network, specified by network_id
-contract_address: 0xec4428f18AbD0E538aEde524A4dF6F78C6978251
+contract_address: 0xe83ef51d7575834570e6231f2193a27ba96851b6
 
 # Account private key for signing TXs in network, specified by network_id
-private_key: 093afb31f3bff9edb790580c27a81040dce8a1fef0053a61f30313cd53686dad
+private_key: 28e5d6796f472566f7e1fabc0ac277f1b39527505293831f63979c33f0c7665f
 
 # How many minutes service should wait between updates of exchange rate
 update_rate: 60
