@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net"
 	"time"
-	"errors"
 
 	"WindToken/constants/messageTypes"
 	"WindToken/crypto"
@@ -30,7 +30,9 @@ type ReturnBTCData struct {
 // Dial starts connection with BTCService via tcp.
 func Dial(port uint, walletAddress string) (err error) {
 	conn, err := net.Dial("tcp", fmt.Sprintf("127.0.0.1:%d", port))
-	if err != nil { return }
+	if err != nil {
+		return
+	}
 
 	var message bytes.Buffer
 	enc := gob.NewEncoder(&message)
@@ -91,12 +93,14 @@ func returnBtc(conn net.Conn, data *types.BTCServiceResp) {
 }
 
 func handleMessage(line []byte) *ReturnBTCData {
+	log.Println("handleMessage")
 	var message types.BTCServiceResp
 
 	r := bytes.NewReader(line)
 	dec := gob.NewDecoder(r)
 	err := dec.Decode(&message)
 	if err != nil {
+		log.Println("ERROR: ", err)
 		return nil
 	}
 
@@ -139,7 +143,9 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	if err != nil {
 		uErr.Fatal(err, "failed to find transaction")
 	}
-	if found { return }
+	if found {
+		return
+	}
 
 	// Save transaction in DB.
 	err = db.Instance.Insert(&dbTypes.Transaction{
