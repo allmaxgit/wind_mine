@@ -61,7 +61,7 @@ func main() {
 	// Start connection with ExchangeRateService.
 	go func() {
 		fmt.Println("Rate service connection...")
-		err = crypto.Dial(9090)
+		err = crypto.Dial(9096)
 		if err != nil {
 			uErr.Fatal(err, "failed crypto Dial")
 		}

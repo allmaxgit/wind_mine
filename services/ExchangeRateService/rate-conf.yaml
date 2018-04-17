@@ -1,7 +1,7 @@
 # This is example configuration file for ExchangeRateService
 
 # TCP server port
-tcp_port: 9090
+tcp_port: 9096
 
 # Infura service connection token
 infura_token: 1FXGefsSL6IqcH6Zj5Gc
@@ -15,7 +15,7 @@ infura_token: 1FXGefsSL6IqcH6Zj5Gc
 network_id: 3
 
 # WindToken crowdsale contract address in the network, specified by network_id
-contract_address: 0xe83ef51d7575834570e6231f2193a27ba96851b6
+contract_address: 0x97187f845217b2d6892c1726db02bcdaaab6489e
 
 # Account private key for signing TXs in network, specified by network_id
 private_key: 28e5d6796f472566f7e1fabc0ac277f1b39527505293831f63979c33f0c7665f

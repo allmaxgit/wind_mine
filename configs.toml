@@ -2,8 +2,8 @@
     logOutPath = "./out/out.log"
 
 [server]
-    gRPCPort = 9092
-    restPort = 9091
+    gRPCPort = 9093
+    restPort = 9094
 
 [crypto]
     # BTC
@@ -21,14 +21,14 @@
     infuraToken = "1FXGefsSL6IqcH6Zj5Gc"
 
     # Contract
-    crowdsaleAddress = "0xe83ef51d7575834570e6231f2193a27ba96851b6"
+    crowdsaleAddress = "0x97187f845217b2d6892c1726db02bcdaaab6489e"
     ownerPrivateKey = "28e5d6796f472566f7e1fabc0ac277f1b39527505293831f63979c33f0c7665f"
     ownerAddress = "0xc851D654F07Bfc2DbFEa8C7661a1cfca53575E47" # Important! Must be associated with ownerPrivateKey.
     gasPrice = 5000000000 # Wei.
     gasLimit = 4700000
 
 [services]
-    btcServicePort = 8082
+    btcServicePort = 8083
 
 [database]
     [database.dev]

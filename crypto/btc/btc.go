@@ -20,6 +20,7 @@ import (
 	dbTypes "WindToken/db/types"
 	uErr "WindToken/errors"
 	"WindToken/types"
+	"math"
 )
 
 type ReturnBTCData struct {
@@ -106,7 +107,7 @@ func handleMessage(line []byte) *ReturnBTCData {
 
 	switch message.Type {
 	case messageTypes.VALUE_RECEIVED:
-		returnRequired := updateBuyerBalance(message.Value, message.From, message.TXHash)
+		returnRequired := updateBuyerBalance(message.Value / math.Pow(10, 18), message.From, message.TXHash)
 		if returnRequired {
 			return &ReturnBTCData{ReturnRequired: returnRequired, BTCData: message}
 		}

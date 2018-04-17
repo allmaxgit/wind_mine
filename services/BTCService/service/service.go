@@ -8,6 +8,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"math"
 
 	"WindToken/constants/messageTypes"
 	uErr "WindToken/errors"
@@ -33,12 +34,15 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 		btcWatcher.OnNewValue = func(value float64, from string, txHash string) {
 			var message bytes.Buffer
 			enc := gob.NewEncoder(&message)
-			enc.Encode(types.BTCServiceResp{
+			err := enc.Encode(types.BTCServiceResp{
 				Type:   messageTypes.VALUE_RECEIVED,
-				Value:  value,
+				Value:  value * math.Pow(10, 18),
 				From:   from,
 				TXHash: txHash,
 			})
+			if err != nil {
+				uErr.Fatal(err, "failed to encode in OnNewValue")
+			}
 
 			_, err = conn.Write(append(message.Bytes(), '\n'))
 			if err != nil {

@@ -3,7 +3,7 @@
     storePath = "./out/store"
 
 [server]
-    tcpPort = 8082
+    tcpPort = 8083
 
 [bitcoin]
     rpcHost = "89.111.20.200:8332" # TODO: Change to localhost
