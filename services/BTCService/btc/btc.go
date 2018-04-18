@@ -158,7 +158,6 @@ func (w *Watcher) WatchAddress(addr string) error {
 						log.Println("vout:", vout)
 						log.Println("------------------")
 
-						var ownerAddresses []string
 						// Detect TX owner.
 						in := tx.Vin[0]
 						ownerTxOutIndex := in.Vout
@@ -169,26 +168,13 @@ func (w *Watcher) WatchAddress(addr string) error {
 						}
 
 						ownerOut := ownerTx.Vout[ownerTxOutIndex]
-						ownerAddresses = append(ownerAddresses, ownerOut.ScriptPubKey.Addresses[0])
+						ownerAddr := ownerOut.ScriptPubKey.Addresses[0]
 
-						// Go deeper.
-						in2 := ownerTx.Vin[0]
-						ownerTxOutIndex2 := in2.Vout
-						ownerTxHash2, _ := chainhash.NewHashFromStr(in2.Txid)
-						ownerTx2, err := w.client.GetRawTransactionVerbose(ownerTxHash2)
-						if err != nil {
-							return uErr.Combine(err, "failed to get owner tx2")
-						}
-						ownerOut2 := ownerTx2.Vout[ownerTxOutIndex2]
-						ownerAddresses = append(ownerAddresses, ownerOut2.ScriptPubKey.Addresses[0])
-
-						for _, oAddr := range ownerAddresses {
-							if w.OnNewValue != nil {
-								w.OnNewValue(vout.Value, oAddr, txStr)
-							}
+						if w.OnNewValue != nil {
+							w.OnNewValue(vout.Value, ownerAddr, txStr)
 						}
 
-						log.Println("tx owner:", ownerAddresses, "tx value", vout.Value, "tx hash", tx.Txid)
+						log.Println("tx owner:", ownerAddr, "tx value", vout.Value, "tx hash", tx.Txid)
 					}
 				}
 			}

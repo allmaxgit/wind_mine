@@ -50,8 +50,6 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			}
 		}
 
-		// DELETE
-		btcWatcher.OnNewValue(0.09, "2N5FWM2eDd58MXjncqvcWscCSWNNcYDoiYd", "6923afe5b2e068f2b98ec69c1a9b8d5b9dedafae60e65d50c35b76141181d974")
 		go handleConnection(conn, btcWatcher)
 	}
 }

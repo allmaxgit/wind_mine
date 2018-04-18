@@ -134,8 +134,9 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	// Find investor in db.
 	investor, found, err := buyer.FindByBTCAddress(buyerAddr)
 	if err != nil || !found {
-		uErr.LogError(err, "failed to find investor")
-		btcReturnRequired = true
+		if err != nil {
+			uErr.LogError(err, "failed to find investor")
+		}
 		return
 	}
 
@@ -143,10 +144,10 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	_, found, err = transaction.FindByHash(txHash)
 	if err != nil {
 		uErr.Fatal(err, "failed to find transaction")
-	}
-	if found {
+		btcReturnRequired = true
 		return
 	}
+	if found { return }
 
 	// Save transaction in DB.
 	err = db.Instance.Insert(&dbTypes.Transaction{
@@ -175,10 +176,6 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	if err != nil || !kycPassed {
 		if err != nil {
 			uErr.LogError(err, "failed to pass KYC")
-			err = saveUnhandledBtcReturn(buyerAddr, value, txHash, true)
-			if err != nil {
-				uErr.LogError(err, "failed to save unhandled BTC return transaction")
-			}
 		}
 		log.Println("KYC is not passed, BTC should be returned")
 		btcReturnRequired = true
