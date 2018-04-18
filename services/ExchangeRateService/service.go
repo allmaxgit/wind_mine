@@ -5,10 +5,11 @@ import (
 	"encoding/gob"
 	"fmt"
 	"net"
-
-	"WindToken/constants"
 	uErr "WindToken/errors"
 	"WindToken/types"
+	"log"
+	"time"
+	"WindToken/constants"
 )
 
 // StartTCPServer starts TCP listening on certain port.
@@ -43,15 +44,13 @@ func StartTCPServer(conf *Config, w *Watcher) (err error) {
 			}
 		}
 
-		ethRate := GetETHRate()
-		btcRate := GetBTCRate()
-		if ethRate != 0 {
-			w.OnNewRate(constants.ETH, conf.FiatSymbol, ethRate)
+		// Waiting for rates.
+		for GetBTCRate() == 0 || GetETHRate() == 0 {
+			log.Println("wait-------------")
+			time.Sleep(5 * time.Second)
 		}
-		if btcRate != 0 {
-			w.OnNewRate(constants.BTC, conf.FiatSymbol, btcRate)
-		}
-
+		w.OnNewRate(constants.BTC, conf.FiatSymbol, GetBTCRate())
+		w.OnNewRate(constants.ETH, conf.FiatSymbol, GetETHRate())
 	}
 
 	return

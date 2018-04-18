@@ -25,6 +25,7 @@ type Bitcoin struct {
 	User       string
 	Password   string
 	PrivateKey string `toml:"private_key"`
+	Testnet    bool
 }
 
 var configs Configs

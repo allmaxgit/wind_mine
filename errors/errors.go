@@ -31,13 +31,6 @@ const (
 	ErrICONotStarted   = "ico not started"
 	ErrICOFinished     = "ico finished"
 	ErrDataRetrieve    = "failed to retrieve data from contract"
-	ErrCreateRawTX     = "failed to create raw transaction"
-	ErrSendRawTx       = "failed to send raw transaction"
-	ErrSignIn          = "failed to sign one or more transaction inputs"
-	ErrSignTx          = "failed to sign raw transaction"
-	ErrPrivDecode      = "failed to decode private key to bitcoin WIF"
-	ErrPayToAddrScript = "failed to create PayToPubKey script"
-	ErrNodeInfo        = "failed to get btc node info"
 
 	ErrUnknown = "unknown error"
 )

@@ -149,20 +149,6 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 	}
 	if found { return }
 
-	// Save transaction in DB.
-	err = db.Instance.Insert(&dbTypes.Transaction{
-		Buyer:   investor,
-		BuyerId: investor.Id,
-		From:    buyerAddr,
-		Amount:  value,
-		Hash:    txHash,
-	})
-	if err != nil {
-		uErr.LogError(err, "failed to insert Transaction")
-		btcReturnRequired = true
-		return
-	}
-
 	// Check if contract is finished.
 	finished, err := eth.IsCrowdsaleFinished()
 	if err != nil || finished {
@@ -178,6 +164,20 @@ func updateBuyerBalance(value float64, buyerAddr string, txHash string) (btcRetu
 			uErr.LogError(err, "failed to pass KYC")
 		}
 		log.Println("KYC is not passed, BTC should be returned")
+		btcReturnRequired = true
+		return
+	}
+
+	// Save transaction in DB.
+	err = db.Instance.Insert(&dbTypes.Transaction{
+		Buyer:   investor,
+		BuyerId: investor.Id,
+		From:    buyerAddr,
+		Amount:  value,
+		Hash:    txHash,
+	})
+	if err != nil {
+		uErr.LogError(err, "failed to insert Transaction")
 		btcReturnRequired = true
 		return
 	}
@@ -212,7 +212,7 @@ func saveUnhandledBtcReturn(from string, amount float64, hash string, kycFailed 
 	})
 	if err != nil {
 		uErr.LogError(err, "failed to insert NotHandledBTCReturn from:", from)
-		return errors.New("failed") //TODO return something sensible
+		return errors.New("failed") // TODO return something sensible
 	}
 
 	return nil

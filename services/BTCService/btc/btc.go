@@ -32,7 +32,6 @@ type Watcher struct {
 }
 
 const (
-	ACCOUNT        = "mainAccount"
 	LAST_BLOCK_KEY = "lastHandledBTCBlock"
 )
 
@@ -193,19 +192,19 @@ func (w *Watcher) WatchAddress(addr string) error {
 	return nil
 }
 
-//ReturnBTC returns `amount` BTC back to `to`, using `receiveHash` as input transaction
+// ReturnBTC returns `amount` BTC back to `to`,
+// using `receiveHash` as input transaction.
 func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 	log.Println("Sending", amount, "BTC back to", to, "...")
 	log.Println("Receiving TX is specified by hash - ", receiveHash)
 	txHash, err := chainhash.NewHashFromStr(receiveHash)
 	if err != nil {
-		log.Println("Failed to create hash from string ", receiveHash, " - ", err)
-		return err
+		return uErr.Combine(err, "failed to create hash from string -", receiveHash)
 	}
+
 	tx, err := w.client.GetRawTransactionVerbose(txHash)
 	if err != nil {
-		log.Println("Failed to get raw TX by hash", receiveHash, ":", err)
-		return err
+		return uErr.Combine(err, "failed to get raw TX by hash -", receiveHash)
 	}
 
 	var txIn []btcjson.TransactionInput
@@ -232,18 +231,16 @@ func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 
 	addr, err := btcutil.DecodeAddress(to, &chaincfg.Params{Net: wire.BitcoinNet(magic)})
 	if err != nil {
-		log.Println("Failed to decode BTC address:", err)
-		return errors.New(uErr.ErrValidateBTCAddress)
+		return uErr.Combine(err, "failed to decode BTC address", receiveHash)
 	}
 
-	//Get node info to get minimum relay fee
+	// Get node info to get minimum relay fee.
 	info, err := w.client.GetNetworkInfo()
 	if err != nil {
-		log.Println("Failed to get node info:", err)
-		return errors.New(uErr.ErrNodeInfo)
+		return uErr.Combine(err, "failed to get node info", receiveHash)
 	}
 
-	const bytesInTx = 200.0 //approximate size of transaction
+	const bytesInTx = 200.0 // Approximate size of transaction.
 	const satoshisInBytes = 5.0
 	fee := satoshisInBytes * bytesInTx / 10E8
 	if fee < info.RelayFee {
@@ -254,53 +251,46 @@ func (w *Watcher) ReturnBTC(to, receiveHash string, amount float64) error {
 
 	rawTx, err := w.client.CreateRawTransaction(txIn, amounts, nil)
 	if err != nil {
-		log.Println("Failed to create raw transaction for returning BTC:", err)
-		return errors.New(uErr.ErrCreateRawTX)
+		return uErr.Combine(err, "failed to create raw transaction for returning BTC", receiveHash)
 	}
 
-	//decode private key
+	// Decode private key.
 	wif, err := btcutil.DecodeWIF(configs.GetConfigs().Bitcoin.PrivateKey)
 	if err != nil {
-		log.Println("Failed to decode WIF from private key:", err)
-		return errors.New(uErr.ErrPrivDecode)
+		return uErr.Combine(err, "failed to decode WIF from private key", receiveHash)
 	}
 
-	//Import PriKey to node
+	// Import PriKey to node.
 	err = w.client.ImportPrivKey(wif)
 	if err != nil {
-		log.Println("Failed to import private key: ", err)
+		uErr.LogError(err, "failed to import private key")
 	}
 
 	for _, out := range rawTx.TxOut {
 		out.PkScript, err = txscript.PayToAddrScript(addr)
 		if err != nil {
-			log.Println("Failed to create scriptPubKey:", err)
-			return errors.New(uErr.ErrPayToAddrScript)
+			return uErr.Combine(err, "failed to create scriptPubKey", receiveHash)
 		}
 	}
 
 	var wifs []string
 	wifs = append(wifs, wif.String())
-	// sign raw transaction and inputs for this transactions
-	signedTx, allSigned, err := w.client.SignRawTransaction3(rawTx, rawTxIn, wifs)
+	// Sign raw transaction and inputs for this transactions.
+	signedTx, allSigned, err := w.client.SignRawTransaction(rawTx)
 	if err != nil {
-		log.Println("SignRawTransaction failed:", err)
-		return errors.New(uErr.ErrSignTx)
+		return uErr.Combine(err, "SignRawTransaction failed", receiveHash)
 	}
 	if !allSigned {
-		log.Println("SignRawTransaction failed to sign one or more TX inputs")
-		return errors.New(uErr.ErrSignIn)
+		return uErr.Combine(err, "SignRawTransaction failed to sign one or more TX inputs", receiveHash)
 	}
 
 	// send raw transaction
 	hash, err := w.client.SendRawTransaction(signedTx, false)
 	if err != nil {
-		log.Println("Failed to send raw transaction:", err)
-		return errors.New(uErr.ErrSendRawTx)
+		return uErr.Combine(err, "failed to send raw transaction", receiveHash)
 	}
 
 	log.Printf("Returning %f BTC to %s, returning TX hash - %s", amount, to, hash.String())
-
 	return nil
 }
 

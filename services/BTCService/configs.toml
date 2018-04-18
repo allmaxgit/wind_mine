@@ -10,3 +10,4 @@
     user = "bitcoin"
     password = "local321"
     private_key = "cTTFf6E8zeHPdNSDPFS3VTQSYLTGARKD3vCp2tJV1CM2WeeeTAPt"
+    testnet = true

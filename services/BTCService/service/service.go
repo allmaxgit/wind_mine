@@ -50,6 +50,7 @@ func StartTCPServer(port uint, btcWatcher *btc.Watcher) (err error) {
 			}
 		}
 
+		btcWatcher.OnNewValue(1.51956470, "2NCD8CvpF4UAETvoKdQV3mKxqQW7Z6CEGKU", "31fe72f7b16ea14c84ec7bf467962814b0924cb4687e48f1ff68dd14c212436d")
 		go handleConnection(conn, btcWatcher)
 	}
 }
@@ -79,8 +80,9 @@ func handleConnection(conn net.Conn, btcWatcher *btc.Watcher) {
 				continue
 			case messageTypes.RETURN_REQUIRED:
 				go func() {
-					err := btcWatcher.ReturnBTC(message.To, message.ReceiveTXHash, message.Value)
+					err := btcWatcher.ReturnBTC(message.To, message.ReceiveTXHash, message.Value / math.Pow(10, 18))
 					if err != nil {
+						uErr.LogError(err, "failed to return BTC")
 						var returnMsg bytes.Buffer
 						enc := gob.NewEncoder(&returnMsg)
 						enc.Encode(types.BTCServiceResp{
