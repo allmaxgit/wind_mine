@@ -33,6 +33,12 @@ contract Crowdsale is UsingFiatPrice {
     uint256 public constant frozenReserve = 80000000;
 
     /**
+     * @title isReserveSent
+     * @dev Flag which shows, whether frozen reserve has been sent or not
+     */
+    bool public isReserveSent = false;
+
+    /**
      * @title reserveFreezeTimestamp
      * @dev Timestamp of started freezing date
      */
@@ -520,8 +526,10 @@ contract Crowdsale is UsingFiatPrice {
     function receiveFrozenReserve(address _receiver) public onlyOwner nonReentrant {
         require(crowdsaleState == State.FINISHED);
         require(now >= reserveFreezeTimestamp + freezePeriod);
+        require(!isReserveSent);
         require(_receiver != address(0));
 
+        isReserveSent = true;
         token.transfer(_receiver, frozenReserve.mul(10 ** token.decimals()));
         FrozenReserveRetrieved(_receiver, now);
     }
