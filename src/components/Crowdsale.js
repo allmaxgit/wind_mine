@@ -42,6 +42,7 @@ class Crowdsale extends Component {
       tokensSold: '',
       weiRaised: '',
       wallet: '',
+      frozenWallet: '',
       crowdsaleState: '',
 
       newPrivateParticipant: '',
@@ -72,6 +73,7 @@ class Crowdsale extends Component {
     this.setIcoFinishDate = this.setIcoFinishDate.bind(this);
     this.manualReserve = this.manualReserve.bind(this);
     this.withdraw = this.withdraw.bind(this);
+    this.receiveFrozenReserve = this.receiveFrozenReserve.bind(this);
 
   }
 
@@ -314,6 +316,20 @@ class Crowdsale extends Component {
     }
   }
 
+  async receiveFrozenReserve() {
+    const {web3, instanceCrowdsale} = this.props;
+    const {frozenWallet} = this.state;
+
+    const isAddress = web3.isAddress(frozenWallet);
+    if (isAddress) {
+      await this.feasibility(instanceCrowdsale.receiveFrozenReserve, [
+        frozenWallet, {from: web3.eth.accounts[0], gas: 300000}
+      ]);
+    } else {
+      alert(`${frozenWallet} is not address!`);
+    }
+  }
+
   async manualReserve() {
     const {web3, instanceCrowdsale} = this.props;
     const {reserveReceiver, reserveAmount} = this.state;
@@ -354,7 +370,7 @@ class Crowdsale extends Component {
   render() {
     const {instanceCrowdsale} = this.props;
     const {
-      owner, token, crowdsaleState, wallet, weiRaised,
+      owner, token, crowdsaleState, wallet, frozenWallet, weiRaised,
       privateSale, preIco, ico,
       generalHardCap, currentHardCap, tokensSold,
       newWallet, newPrivateParticipant, newWhitelistedAddress,
@@ -476,6 +492,15 @@ class Crowdsale extends Component {
             buttonTitle="setIcoFinishDate"
             funcButton={this.setIcoFinishDate}
             placeholder={ico.finishDate.toString()}
+          />
+          <SmartContractFunction
+            label="Sends frozen reserve"
+            variable={frozenWallet}
+            valueChange="frozenWallet"
+            funcChange={this.changeValue}
+            buttonTitle="receiveFrozenReserve"
+            funcButton={this.receiveFrozenReserve}
+            placeholder={'e.g. 0x345ca3e014aaf5dca488057592ee47305d9b3e10'}
           />
           <Row className="funcRow">
             <Col md={{size: 3}}>
