@@ -393,13 +393,12 @@ contract Crowdsale is UsingFiatPrice {
         } else if (crowdsaleState == State.ICO) {
             stagePriceInFiatFracture = icoPriceInFiatFracture;
         }
-        tokensBought = fiatAmount.div(stagePriceInFiatFracture);
+        tokensBought = fiatAmount.mul(10 ** token.decimals()).div(stagePriceInFiatFracture); //amount of tokens bought with decimals
 
         require(tokensBought > 0);
-
         if (tokensSold.add(tokensBought) > currentHardCap) {
             tokensBought = currentHardCap.sub(tokensSold);
-            realReceivedWei = tokensBought.mul(stagePriceInFiatFracture).mul(weiInFiat);
+            realReceivedWei = tokensBought.mul(stagePriceInFiatFracture).mul(weiInFiat).div(10 ** token.decimals());
             change = receivedWei.sub(realReceivedWei);
         } else {
             realReceivedWei = receivedWei;
@@ -415,7 +414,7 @@ contract Crowdsale is UsingFiatPrice {
             icoWeiRaised = icoWeiRaised.add(realReceivedWei);
         }
 
-        if (token.balanceOf(_sender) == 0) {
+        if (tokensOrdered[_sender] == 0) {
             investorsList.push(_sender);
         }
 
@@ -423,7 +422,6 @@ contract Crowdsale is UsingFiatPrice {
             _sender.transfer(change);
         }
 
-        tokensBought = tokensBought.mul(10 ** token.decimals());
         tokensOrdered[_sender] = tokensOrdered[_sender].add(tokensBought);
 
         TokensAreOrdered(_sender, tokensBought, weiInFiat);
@@ -435,8 +433,6 @@ contract Crowdsale is UsingFiatPrice {
     function receiveOrderedTokens() public nonReentrant {
         require(crowdsaleState == State.FINISHED);
         require(tokensOrdered[msg.sender] > 0);
-        //KYC check
-        require(whiteList[msg.sender]);
 
         uint256 numOfTokens = tokensOrdered[msg.sender];
         tokensOrdered[msg.sender] = 0;
@@ -561,6 +557,7 @@ contract Crowdsale is UsingFiatPrice {
     function setWallet(address _newWallet) public onlyOwner {
         checkState();
         require(crowdsaleState != State.FINISHED);
+        require(_newWallet != address(0));
         WalletHasChanged(wallet, _newWallet);
         wallet = _newWallet;
     }
