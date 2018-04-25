@@ -40,8 +40,8 @@ contract('OtherTest', function ([wallet, foundersWallet, frozeWallet, ...account
     await this.crowdsale.updateWeiInFiat(ether(0.000018));
   });
 
-  describe('White list', function () {
-    it('Buy tokens', async function () {
+  describe('Investors list', function () {
+    it('Added after buy tokens', async function () {
       await this.crowdsale.addToWhiteList(accounts[0]);
       await this.crowdsale.addToWhiteList(accounts[1]);
       await increaseTimeTo(this.preIcoStartDate);
@@ -50,6 +50,27 @@ contract('OtherTest', function ([wallet, foundersWallet, frozeWallet, ...account
       await this.crowdsale.sendTransaction({ from: accounts[1], value: ether(0.3) });
       const investors = await this.crowdsale.getInvestorsListLength();
       investors.should.be.bignumber.equal(2);
+    });
+  });
+
+  describe('Buy tokens', function () {
+    it('Buying a token share', async function () {
+      await this.crowdsale.addToWhiteList(accounts[0]);
+      await increaseTimeTo(this.icoStartDate);
+      await this.crowdsale.sendTransaction({ from: accounts[0], value: ether(0.18271818) });
+      const tokens = await this.crowdsale.tokensOrdered(accounts[0]);
+      tokens.should.be.bignumber.equal(10151E6);
+    });
+
+    it('Over hard cap', async function () {
+      await this.crowdsale.updateWeiInFiat(ether(0.000000018));
+      await this.crowdsale.addPrivateParticipant(accounts[0]);
+      await this.crowdsale.addToWhiteList(accounts[0]);
+      await increaseTimeTo(this.privateSaleStartDate);
+      await this.crowdsale.sendTransaction({ from: accounts[0], value: ether(13.5) });
+      const tokens = await this.crowdsale.tokensOrdered(accounts[0]);
+      tokens.should.be.bignumber.equal(10E14);
+      await this.crowdsale.sendTransaction({ from: accounts[0], value: ether(1) }).should.be.rejected;
     });
   });
 

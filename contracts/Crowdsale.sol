@@ -404,6 +404,7 @@ contract Crowdsale is UsingFiatPrice {
         require(tokensBought > 0);
         if (tokensSold.add(tokensBought) > currentHardCap) {
             tokensBought = currentHardCap.sub(tokensSold);
+            require(tokensBought > 0);
             realReceivedWei = tokensBought.mul(stagePriceInFiatFracture).mul(weiInFiat).div(10 ** token.decimals());
             change = receivedWei.sub(realReceivedWei);
         } else {
