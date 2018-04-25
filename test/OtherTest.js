@@ -40,6 +40,19 @@ contract('OtherTest', function ([wallet, foundersWallet, frozeWallet, ...account
     await this.crowdsale.updateWeiInFiat(ether(0.000018));
   });
 
+  describe('White list', function () {
+    it('Buy tokens', async function () {
+      await this.crowdsale.addToWhiteList(accounts[0]);
+      await this.crowdsale.addToWhiteList(accounts[1]);
+      await increaseTimeTo(this.preIcoStartDate);
+      await this.crowdsale.sendTransaction({ from: accounts[0], value: ether(0.1) });
+      await this.crowdsale.sendTransaction({ from: accounts[0], value: ether(0.2) });
+      await this.crowdsale.sendTransaction({ from: accounts[1], value: ether(0.3) });
+      const investors = await this.crowdsale.getInvestorsListLength();
+      investors.should.be.bignumber.equal(2);
+    });
+  });
+
   describe('Frozen reserve', function () {
     it('Receive', async function () {
       await increaseTimeTo(this.icoFinishDate + duration.years(1) + duration.days(1));
