@@ -474,7 +474,7 @@ contract Crowdsale is UsingFiatPrice {
             if (crowdsaleState != State.FINISHED) {
                 StateHasChanged(State.ICO, State.FINISHED);
                 crowdsaleState = State.FINISHED;
-                reserveFreezeTimestamp = now;
+                reserveFreezeTimestamp = icoFinishDate;
             }
         }
     }
